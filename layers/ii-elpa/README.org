@@ -13,6 +13,7 @@
 - [[#description][Description]]
   - [[#features][Features:]]
 - [[#install][Install]]
+- [[#usage][Usage]]
 
 * Description
 This layer ensures there is a local cache of elpa so updates can be done offline.
@@ -20,9 +21,23 @@ This layer ensures there is a local cache of elpa so updates can be done offline
 ** Features:
   - Pinning Elpa
   - Creating Cache Folders
-  - Uploading Cache
+  - TODO Uploading Cache
 
 * Install
-To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+To use this configuration layer, add it to your =~/.spacemacs.d/init.el=. You will need to
 add =ii-elpa= to the existing =dotspacemacs-configuration-layers= list in this
 file.
+
+* Usage
+The upstream docs: https://github.com/redguardtoo/elpa-mirror#usage
+
+M-x elpamr-create-mirror-for-installed to create local repository.
+
+
+
+
+
+
+
+
+
