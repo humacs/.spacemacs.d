@@ -54,6 +54,7 @@ This function should only modify configuration layer settings."
      ;; syntax-checking
      ;; version-control
      treemacs
+     git
      )
 
    ;; List of additional packages that will be installed without being
