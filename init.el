@@ -55,6 +55,7 @@ This function should only modify configuration layer settings."
      ;; version-control
      treemacs
      git
+     osx
      ii-elpa
      )
 
