@@ -1,0 +1,30 @@
+#+TITLE: Setup *macs with zach!
+#+AUTHOR: Zach Mandeville
+
+* Purpose
+Track the setup of spacemacs with my own custom .spacemacs.d folder, to remember anything special I did when helping someone else.
+* Steps
+** Clone spacemacs to .emacs.d
+  : git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
+** Switch to develop branch of spacemacs
+   #+begin_example shell
+   cd ~/.emacs.d
+   git checkout develop
+   git pull
+   #+end_example
+** Clone humacs/spacemacs.d to my spacemacs.d
+   : git clone git@github.com:humacs/.spacemacs.d.git ~/.spacemacs.d
+** Start up emacs
+   : emacs -nw
+** Update Packages
+   When started for the first time, spacemacs installs a bunch of packages from melpa. However, I had an issue where a bunch of packages couldn't be found and so org-mode was not working as expected.  I was able to fix this by updating the packages and then recompiling.
+
+   To update:
+   : spc feU
+
+   To recompile:
+   : spc fec
+** Uncomment some sane defaults
+   Since this is my own spacemacs.d now, I can make changes directly to the .init file (getting to it with ~spc fed~).  I uncommented my favorite among the suggested layers.
+
+   Tested it all by opening my flow.org and adding it to agenda list.  agenda list is still working and the capture templaates are working.  Both were not working with kubemacs and so I am happy.
