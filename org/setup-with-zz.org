@@ -28,3 +28,27 @@ Track the setup of spacemacs with my own custom .spacemacs.d folder, to remember
    Since this is my own spacemacs.d now, I can make changes directly to the .init file (getting to it with ~spc fed~).  I uncommented my favorite among the suggested layers.
 
    Tested it all by opening my flow.org and adding it to agenda list.  agenda list is still working and the capture templaates are working.  Both were not working with kubemacs and so I am happy.
+** Delete the cache and recompile
+   I am having an issue where I cannot refile any headings in org-mode, nor can I archive them.  I get the error message
+   ~invalid function: org-preserve-local-variables~
+
+   This is a known issue with spacemacs /and/ emacs, based on how emacs packaging works.  You can keep up with the discussion on this [[https://github.com/syl20bnr/spacemacs/issues/11801][spacemacs ticket]]  , where they offer the workaround of deleting all the org .elc files in your cache and recompiling from elpa.
+
+   I tried a number of their workarounds without success.  This definitely feels brittle, or near superstitious on how I got it to work, but this incantation and these steps helped me:
+
+  First find and remove all .elc files from .emacs.d:
+  #+begin_src shell :results silent
+    cd ~/.emacs.d
+    find . -name *.elc -print0 | xargs -0 rm
+  #+end_src
+
+  Then fully quit out of emacs with ~spc qq~ and restart it.
+#+begin_example shell
+emacs -nw # we don't want to connect to a server or open a file, we want a full restart
+#+end_example
+
+While on the spacemacs home screen, recompile elpa with ~spc spc spacemacs/recompile-elpa~
+
+Quit out and start again.
+
+Open an org file and try archiving a subtree(=,sA=) or refiling a subtree(=,sr=).  Both should now work.
