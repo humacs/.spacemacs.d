@@ -42,11 +42,13 @@ This function should only modify configuration layer settings."
      better-defaults
      docker
      emacs-lisp
+     git
      helm
      ;; lsp
      markdown
      multiple-cursors
      org
+     osx
      (shell :variables
             shell-default-height 30
             shell-default-position 'bottom)
@@ -54,8 +56,6 @@ This function should only modify configuration layer settings."
      syntax-checking
      ;; version-control
      treemacs
-     git
-     osx
      ii-elpa
      ii-org-capture
      )
