@@ -106,3 +106,74 @@ Open an org file and try archiving a subtree(=,sA=) or refiling a subtree(=,sr=)
                                       version-control ; nah, feels overkill with already having git?
                                       yaml ; needed
   #+end_example
+** Add node to box
+   When testing the javascript layer, by attempting to run a js code block, got error 'node command not found'.  So I need to install node on this machine, and remember it's a requirement on any other machines we set up.
+[[https://github.com/nvm-sh/nvm][nvm]]   is a great way to install node on any os.
+
+   #+NAME: Run nvm script
+   #+begin_src shell
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+   #+end_src
+
+   once i restart the terminal...
+   #+NAME: confirm nvm installed
+   #+begin_src shell
+command -v nvm
+   #+end_src
+
+   Then install node
+   #+NAME: Install node
+   #+begin_src shell
+   nvm install node
+   #+end_src
+
+   Check it worked
+   #+NAME: Check node is installed
+   #+begin_src shell
+node --version
+   #+end_src
+
+   #+RESULTS: Check node is installed
+   : v14.1.0
+
+  nice
+
+
+** Add better syntax defaults for web dev
+   For some reason, spacemacs insists on 4 space indents for all web dev languyages, even if you explicilty set them differently.  The only fix I found was in a person's config shared on github (linked in user-config).  I am adding it to this user-config now too..
+* Testing things all work
+** Refile Me!
+** web stuff
+   #+NAME: Web Works
+   #+begin_src web
+     <html>
+         <head>
+             <title>web works!</title>
+         </head>
+         <body>
+             <h1>very good</h1>
+         </body>
+     </html>
+   #+end_src
+
+   #+NAME: Javascript
+   #+begin_src js :results output :var FRIEND="Zach"
+     let adj = 'very cool';
+
+     function compliment (person) {
+       return `Hello, ${person}, you are ${adj}`;
+     };
+
+     let giveCompliment = compliment(FRIEND);
+     console.log(giveCompliment);
+   #+end_src
+
+   #+RESULTS: Javascript
+   : Hello, Zach, you are very cool
+
+   Thanks!
+
+** go stuff
+** python stuff
+**
+* Refile Works!
