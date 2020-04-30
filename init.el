@@ -43,8 +43,9 @@ This function should only modify configuration layer settings."
      docker
      emacs-lisp
      git
+     go
      helm
-     ;; lsp
+     lsp
      markdown
      multiple-cursors
      org
