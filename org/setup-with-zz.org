@@ -4,16 +4,10 @@
 * Purpose
 Track the setup of spacemacs with my own custom .spacemacs.d folder, to remember anything special I did when helping someone else.
 * Steps
-** Clone spacemacs to .emacs.d
-  : git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
-** Switch to develop branch of spacemacs
-   #+begin_example shell
-   cd ~/.emacs.d
-   git checkout develop
-   git pull
-   #+end_example
+** Clone develop branch of spacemacs to .emacs.d
+   : git clone -b develop https://github.com/syl20bnr/spacemacs ~/.emacs.d
 ** Clone humacs/spacemacs.d to my spacemacs.d
-   : git clone git@github.com:humacs/.spacemacs.d.git ~/.spacemacs.d
+   : git clone git@github.com:humacs/.spacemacs.d ~/.spacemacs.d
 ** Start up emacs
    : emacs -nw
 ** Update Packages
