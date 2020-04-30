@@ -49,11 +49,11 @@ Open an org file and try archiving a subtree(=,sA=) or refiling a subtree(=,sr=)
 ** Add apisnoop/docs to org-agenda
  I didn't realize the extent of agenda's power for finding things, that you can search across your files for keywords, tags, hyeadings, etc.  We can use this to make a really nice knowledge base for our org files, but it requires having them in our agenda list.
 
- The agenda list lets you add a directory, which will put all files in its immediate path (no subdirectories) in the agenda list.  This is moving away from reprorducible, as it now expects us all to have an apisnoop dir in our home path.  At the same time, this makes sense for ii employees to have...
+ The agenda list lets you add a directory, which will put all files in its immediate path (no subdirectories) in the agenda list.  This is moving away from reproducible, as it now expects us all to have an apisnoop dir in our home path.  At the same time, this makes sense for ii employees to have...
 
- Long-term, I can see us keeping org files in the spacemacs.d folder itself, at least those related to moving throlugh and using spacemacs.  These would get loaded by default, and then there'd be functions one could run to add apisnoop to the agenda if/when they clone it or something.  I'ma keep moving now to get folks feedback on this flow.  I think it'll make more sense to discuss when we can all see it.
+ Long-term, I can see us keeping org files in the spacemacs.d folder itself, at least those related to moving through and using spacemacs.  These would get loaded by default, and then there'd be functions one could run to add apisnoop to the agenda if/when they clone it or something.  I'ma keep moving now to get folks feedback on this flow.  I think it'll make more sense to discuss when we can all see it.
 ** Add necessary layers from original ii layer to .spacemacs.d/init.el
-   We have an ii layer that requires a bunch of other layers, from a time when we weren't able to do this overlay.  At the same time, there's some niced functions in ii around pairing.  I wanna extract these so the layer is more modular.  So i am goinug to move stuff like docker/elisp/ etc from the ii layer and see what's left.
+   We have an ii layer that requires a bunch of other layers, from a time when we weren't able to do this overlay.  At the same time, there's some niced functions in ii around pairing.  I wanna extract these so the layer is more modular.  So i am going to move stuff like docker/elisp/ etc from the ii layer and see what's left.
   These layers are:
   #+begin_example elisp
  ;; List of layers we depend on
@@ -77,7 +77,7 @@ Open an org file and try archiving a subtree(=,sA=) or refiling a subtree(=,sr=)
                                       yaml
   #+end_example
 
-  i am not sure we need all of them, I'll annotate my reasoniung to what I add
+  I am not sure we need all of them, I'll annotate my reasoniung to what I add
 
   #+begin_example elisp
  ;; List of layers we depend on
@@ -102,29 +102,29 @@ Open an org file and try archiving a subtree(=,sA=) or refiling a subtree(=,sr=)
   #+end_example
 ** Add node to box
    When testing the javascript layer, by attempting to run a js code block, got error 'node command not found'.  So I need to install node on this machine, and remember it's a requirement on any other machines we set up.
-[[https://github.com/nvm-sh/nvm][nvm]]   is a great way to install node on any os.
+[[https://github.com/nvm-sh/nvm][nvm]] is a great way to install node on any os.
 
    #+NAME: Run nvm script
    #+begin_src shell
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
    #+end_src
 
    once i restart the terminal...
    #+NAME: confirm nvm installed
    #+begin_src shell
-command -v nvm
+     command -v nvm
    #+end_src
 
    Then install node
    #+NAME: Install node
    #+begin_src shell
-   nvm install node
+     nvm install node
    #+end_src
 
    Check it worked
    #+NAME: Check node is installed
    #+begin_src shell
-node --version
+     node --version
    #+end_src
 
    #+RESULTS: Check node is installed
