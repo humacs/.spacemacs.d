@@ -492,6 +492,10 @@ before packages are loaded."
 
   ;; don't ask for confirmation every time you execute a code block.
   (setq org-confirm-babel-evaluate nil)
+  ;; add all org files in our projects' org folder to agenda
+  (setq org-agenda-files '(
+                           "~/apisnoop/docs"
+                           ))
 
   )
 
