@@ -496,14 +496,21 @@ before packages are loaded."
 ;;;;
 ;; Org Mode
 ;;;;
-
-  ;; don't ask for confirmation every time you execute a code block.
-  (setq org-confirm-babel-evaluate nil)
+  (setq
+   ;; don't ask for confirmation every time you execute a code block.
+   org-confirm-babel-evaluate nil
+  ;; sensible (for ii) org-babel defaults
+  org-babel-python-command "python3"
+  org-confirm-babel-evaluate nil
+  ;; enable support for packages that help in org exports
+  org-enable-github-support t
+  org-enable-bootstrap-support t
+  org-enable-reveal-js-support t
+  org-enable-epub-support t
   ;; add all org files in our projects' org folder to agenda
   ;; this adds some searching and navigation super powers (try SPC aom)
-  (setq org-agenda-files '(
-                           "~/apisnoop/docs"
-                           ))
+  org-agenda-files '("~/apisnoop/docs")
+  )
 ;;;;
 ;; Indentation
 ;;;;
@@ -545,5 +552,11 @@ before packages are loaded."
   (add-hook 'sh-mode-hook 'my-personal-code-style)
   )
 
+;;;;
+;; python
+;;;;
+
+  ;; consistent use of python3 in spacemacs
+  (setq python-shell-interpreter "python3")
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
