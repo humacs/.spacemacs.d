@@ -511,6 +511,7 @@ before packages are loaded."
   ;; this adds some searching and navigation super powers (try SPC aom)
   org-agenda-files '("~/apisnoop/docs")
   )
+  (global-visual-line-mode t)
 ;;;;
 ;; Indentation
 ;;;;
