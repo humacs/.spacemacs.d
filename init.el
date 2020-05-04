@@ -73,6 +73,9 @@ This function should only modify configuration layer settings."
    ;; Also include the dependencies as they will not be resolved automatically.
    dotspacemacs-additional-packages '(
                                       s ; useful elisp string functions
+                                      xclip ; copy to and from gui clipboard when in terminal
+                                      feature-mode ; highlighting for cucumber user stories
+                                      ob-async ; asynchronous code blocks, useful for long running processes
                                       )
 
    ;; A list of packages that cannot be updated.
