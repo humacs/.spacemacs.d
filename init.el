@@ -47,6 +47,7 @@ This function should only modify configuration layer settings."
      helm
      html
      javascript
+     kubernetes
      lsp
      markdown
      multiple-cursors
