@@ -43,7 +43,6 @@ This function should only modify configuration layer settings."
      docker
      emacs-lisp
      git
-     go
      helm
      html
      javascript
@@ -60,6 +59,7 @@ This function should only modify configuration layer settings."
      syntax-checking
      treemacs
      ii-elpa
+     ii-go
      ii-org-capture
      )
 
@@ -76,10 +76,6 @@ This function should only modify configuration layer settings."
                                       feature-mode ; highlighting for cucumber user stories
                                       ob-async ; asynchronous code blocks, useful for long running processes
                                       ob-sql-mode ; run sql blocks in org files
-                                      (ob-go :ensure t ; literate go src blocks
-                                             :location (recipe
-                                                        :fetcher github
-                                                        :repo "pope/ob-go"))
                                       )
 
    ;; A list of packages that cannot be updated.
