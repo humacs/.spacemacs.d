@@ -38,7 +38,7 @@ Track the setup of spacemacs with my own custom .spacemacs.d folder, to remember
 
   Then fully quit out of emacs with ~spc qq~ and restart it.
 #+begin_example shell
-emacs -nw # we don't want to connect to a server or open a file, we want a full restart
+  emacs -nw # we don't want to connect to a server or open a file, we want a full restart
 #+end_example
 
 While on the spacemacs home screen, recompile elpa with ~spc spc spacemacs/recompile-elpa~
@@ -322,12 +322,151 @@ My initial plan was ot make this an 'ii-sensible' package. As I was doing this i
                 :location (recipe
                            :fetcher github
                            :repo "astahlman/ob-async"))
-      s
+      s ; added
       xclip
-      yasnippet
+      ;; yasnippet ; already a part of spacemacs
       )
   ;;; packages.el ends here
 
+#+end_src
+
+How much of this is necessary now?  How much is added through layers already?
+s is additional and good, so I added it to our packages
+xclip will be useful for us, assuming we using terminal...but why yasnippet?  that's already included yah?  so i'm removing it.
+
+Next, let's remove any layers that we could import just as packages
+#+begin_src elisp
+  ;;; Code:
+  (defun ii/init-ob-tmate ()
+    (use-package ob-tmate))
+  (defun ii/init-ob-powershell ()
+    (use-package ob-powershell))
+  (defun ii/init-ob-tmux ()
+    (use-package ob-tmux))
+  (defun ii/init-iterm ()
+    (use-package iterm))
+  (defun ii/init-ob-sql-mode ()
+    (use-package ob-sql-mode))
+  (defun ii/init-ox-gfm ()
+    (use-package ox-gfm))
+  (defun ii/init-s ()
+    (use-package ob-sql-mode))
+  (defun ii/init-org-checklist ()
+    (use-package org-checklist))
+  (defun ii/init-ob-go ()
+    (use-package ob-go))
+  (defun ii/init-kubernetes ()
+    (use-package kubernetes))
+  (defun ii/init-kubernetes-evil ()
+    (use-package kubernetes-evil))
+
+  (defun ii/init-osc52e ()
+    )
+  (defun ii/post-init-osc52e ()
+    (require 'osc52e)
+    (osc52-set-cut-function)
+    )
+  (setq ob-async-pre-execute-src-block-hook nil)
+  (defun ii/post-init-ob-async ()
+    (message "ii/post-init-ob-async YAHOOOOOOOO!!")
+    ;; lsp go-mode-hook should go into post-init-go-mode...
+    ;; but for some reason ^^ isn't called
+    ;; FIXME
+    (add-hook 'go-mode-hook #'lsp)
+    (add-hook 'ob-async-pre-execute-src-block-hook
+              '(lambda ()
+                 (require 'org)
+                 (require 'ob-shell)
+                 (require 'ob-powershell)
+                 (add-to-list 'org-babel-load-languages '(shell . t))
+                 )))
+  ;; When we execute src blocks, we have some advice
+  (advice-add 'org-babel-execute-src-block
+              :before #'ii/advice:org-babel-execute-src-block)
+  ;; Disable the execute advice when we export src blocks
+  (advice-add 'org-babel-exp-src-block
+              :around #'ii/advice:org-babel-exp-src-block)
+  (defun ii/post-init-go-mode ()
+    (message "ii/post-init-go-mode YAHOOOOOOOO!!")
+    )
+  (defun ii/post-init-lsp-mode ()
+    (message "ii/post-init-lsp-mode YAHOOOOOOOO!!")
+     (setq
+     go-backend #'lsp
+     lsp-navigation 'both
+     lsp-ui-doc-enable t
+     lsp-ui-doc-position 'top
+     lsp-ui-doc-alignment 'frame
+                                          ; lsp-ui-doc-border 'white
+     lsp-ui-doc-use-childframe t
+     lsp-ui-doc-use-webkit t
+     lsp-ui-doc-delay 0.2
+     lsp-ui-doc-include-signature nil
+     lsp-ui-sideline-show-symbol t
+     lsp-ui-remap-xref-keybindings t
+     lsp-ui-sideline-enable t
+     lsp-prefer-flymake nil
+     lsp-print-io t
+     )
+    )
+  (defun ii/pre-init-org ()
+    (spacemacs|use-package-add-hook org
+      :post-config (progn
+                     (add-to-list 'org-babel-load-languages
+                                  '(go . t))
+                     (add-to-list 'org-babel-load-languages
+                                  '(shell . t))
+                     (add-to-list 'org-babel-load-languages
+                                  '(sql-mode . t))
+                     (add-to-list 'org-babel-load-languages
+                                  '(emacs-lisp . t))
+                     )))
+  (defun ii/post-init-org ()
+    (require 'ob-shell)
+    (require 'ob-powershell)
+    (require 'cal-iso)
+    )
+  (defun ii/post-init-yasnippet ()
+    ;; TODO do this within let for local var
+    (spacemacs|use-package-add-hook yasnippet
+      :post-config (progn
+                     (add-to-list 'yas-snippet-dirs (expand-file-name
+                                                     "snippets"
+                                                     (configuration-layer/get-layer-local-dir
+                                                      'ii))
+                                  t)
+                     (yas-load-directory (expand-file-name
+                                          "snippets"
+                                          (configuration-layer/get-layer-local-dir
+                                           'ii)))
+    )))
+
+  (defconst ii-packages
+    `((ob-powershell
+       :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-powershell")
+       )
+      (iterm
+       :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "iterm")
+       )
+      (ob-tmate
+       :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-tmate")
+       )
+      (kubernetes
+        :ensure t
+        :commands (kubernetes-overview))
+      (kubernetes-evil
+        :ensure t
+        :after kubernetes)
+      (ob-go :ensure t
+             :location (recipe
+                        :fetcher github
+                        :repo "pope/ob-go"))
+      (ob-tmux :ensure t)
+      (ob-sql-mode :ensure t)
+      (osc52e :ensure t
+               :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "osc52e")
+      )
+  ;;; packages.el ends here
 #+end_src
 
 *** TODO funcs
@@ -397,6 +536,24 @@ My initial plan was ot make this an 'ii-sensible' package. As I was doing this i
    :
    : "-------fun"
 
+** org stuff
+*** check async works
+
+    #+begin_src shell
+   sleep 10 && echo 'sync'
+    #+end_src
+
+    #+RESULTS:
+    : sync
+
+    #+begin_src shell :async
+      sleep 3s && echo 'async'
+    #+end_src
+
+    #+RESULTS:
+    : async
+
+    
 * Refile Works!
 * Reference
 ** The original ii layer
@@ -1380,13 +1537,13 @@ alist, to ensure correct results."
  )
 
 ;; setting 'safe-local-variable properties
-(put 'ii 'safe-local-variable (lambda (_) t))
+(put 'ii 'safe-local-variable (lambda (_) t)) ; related to ii: enabled var we put at top of org files.
 (put 'org-babel-tmate-session-prefix 'safe-local-variable #'stringp)
+(put 'org-babel-tmate-default-window-name 'safe-local-variable #'stringp)
 (put 'github-username 'safe-local-variable #'stringp)
 (put 'github-user 'safe-local-variable #'stringp)
-(put 'org-babel-tmate-default-window-name 'safe-local-variable #'stringp)
 (put 'org-confirm-babel-evaluate 'safe-local-variable #'booleanp)
-(put 'org-confirm-babel-evaluate 'safe-local-variable (lambda (_) t))
+;; (put 'org-confirm-babel-evaluate 'safe-local-variable (lambda (_) t))
 (put 'org-use-property-inheritance 'safe-local-variable (lambda (_) t))
 (put 'org-src-preserve-indentation 'safe-local-variable (lambda (_) t))
 (put 'org-file-dir 'safe-local-variable (lambda (_) t))
@@ -1401,7 +1558,7 @@ alist, to ensure correct results."
 ;; ensure current line is highlighted everywhere
 (global-visual-line-mode 1)
 
-;; older versions of org require this for s> templating to work correctly
+;; older versions of org require this for <s templating to work correctly
 (when (version<= "9.2" (org-version)) (require 'org-tempo))
 
     #+end_src
@@ -1430,3 +1587,20 @@ alist, to ensure correct results."
 
 ** Packaging basics
    https://www.gnu.org/software/emacs/manual/html_node/elisp/Packaging-Basics.html
+* Future needs
+** ensure importmagic and epc are installed in our syme packages
+   https://stackoverflow.com/questions/49065606/how-to-fix-spacemacs-importmagic-and-or-epc-not-found
+   otherwise we get an error about importmagic not being fou8nd and a pakcage unable to be installed.
+   the trip is to install the prolgrams in the python environment we are using
+   which means we need to ensure our pairing boxes have python3 and importmagic and epc
+   **
+** get org-checklist working cleanlyA or remake it
+   this just adds the ability to do recurring tasks (clear out a whole checklist when its marked as done)
+   I tried to add it as a package, and it could not be found.  When i look it up, the github link is also  a 404.
+   This is one where the package is likely v. small or already included.  I think we should tackle it when someone has a recurring task ansd theircurrent flow isn't workiung for them.
+
+   
+   
+# Local Variables:
+# eval: (require (quote ob-async))
+# End:
