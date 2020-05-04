@@ -506,7 +506,6 @@ before packages are loaded."
    org-confirm-babel-evaluate nil
   ;; sensible (for ii) org-babel defaults
   org-babel-python-command "python3"
-  org-confirm-babel-evaluate nil
   ;; enable support for packages that help in org exports
   org-enable-github-support t
   org-enable-bootstrap-support t
