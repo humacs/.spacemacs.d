@@ -75,6 +75,7 @@ This function should only modify configuration layer settings."
                                       xclip ; copy to and from gui clipboard when in terminal
                                       feature-mode ; highlighting for cucumber user stories
                                       ob-async ; asynchronous code blocks, useful for long running processes
+                                      ob-sql-mode ; run sql blocks in org files
                                       )
 
    ;; A list of packages that cannot be updated.
