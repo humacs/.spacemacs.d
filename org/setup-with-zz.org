@@ -1406,8 +1406,8 @@ I think i've lifted the most I could and put them into packages.  Though the pac
     (xclip-mode 0)
     ;; and unset it when done
     (setq current-tmate-ssh nil)
-    (setq current-tmate-sh nil)
-    )
+    (setq current-tmate-sh nil))
+
   (with-eval-after-load "org"
     ;; (add-to-list 'org-src-lang-modes '("go-mode" . sql))
     (add-to-list 'org-structure-template-alist
@@ -1944,7 +1944,7 @@ I think i've lifted the most I could and put them into packages.  Though the pac
                :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "osc52e")
       )
 #+end_src
-*** funcs
+*** modified funcs
 #+begin_src elisp
   ;; Stephen's weekly time tracker
   (defun iso-week-to-time (year week day)
