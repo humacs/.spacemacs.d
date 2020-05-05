@@ -763,6 +763,12 @@ I think i've lifted the most I could and put them into packages.  Though the pac
 
    if we add the variables for the shell header args, I am not sure if we need to add the same things for the sh and bash header args.  All of them are wrapped up in ob-shell, which sees all of them as the same (see the variable org-babel-shell-names)
 
+** Create an ii-sql layer
+   This will bring in our literate work, set headers for our org src blocks and set us up for the postgres work.
+
+   it's simple now as i don't want ot have anything assumed because of apisnoop.  When i went through our current sql-hacks it looks like they work to set up the blocks as postgres blocks and to set the default db and user to be apisnoop.  Both are assumptions that should probably go into an apisnoop layer.
+
+
 * Testing things all work
 ** Refile Me!
 ** web stuff
