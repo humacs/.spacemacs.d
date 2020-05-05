@@ -62,6 +62,7 @@ This function should only modify configuration layer settings."
      ii-org
      ii-org-capture
      ii-sql
+     ii-tools
      )
 
    ;; List of additional packages that will be installed without being
