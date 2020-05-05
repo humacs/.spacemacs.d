@@ -50,7 +50,6 @@ This function should only modify configuration layer settings."
      lsp
      markdown
      multiple-cursors
-     org
      osx
      python
      (shell :variables
@@ -60,6 +59,7 @@ This function should only modify configuration layer settings."
      treemacs
      ii-elpa
      ii-go
+     ii-org
      ii-org-capture
      )
 

@@ -15,3 +15,20 @@
  ;; this adds some searching and navigation super powers (try SPC aom)
  org-agenda-files '("~/apisnoop/docs")
  )
+
+;;; Set reasonable (for ii) default header args
+(setq org-babel-default-header-args
+      '((:session . "none")
+        (:results . "replace code")
+        (:comments . "org")
+        (:exports . "both")
+        (:eval . "never-export")
+        (:exports . "code")
+        (:cache . "no")
+        (:noweb . "no")
+        (:hlines . "no")
+        (:tangle . "no")))
+
+(setq org-babel-default-header-args:shell
+      '((:results . "output code verbatim replace")
+        (:wrap . "example")))
