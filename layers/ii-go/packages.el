@@ -30,7 +30,8 @@
 ;;; Code:
 
 (defconst ii-go-packages
-  '((ob-go :location (recipe
+  '(lsp-ui
+    (ob-go :location (recipe
                       :fetcher github
                       :repo "pope/ob-go")))
   "The list of Lisp packages required by the ii-go layer.
@@ -64,5 +65,10 @@ Each entry is either:
     :config
     (setenv "PATH" (concat user-home-directory "go/bin:" (getenv "PATH")))
     ))
+
+(defun ii-go/post-init-lsp-ui ()
+  (setq go-backend #'lsp))
+
+
 
 ;;; packages.el ends here
