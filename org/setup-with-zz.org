@@ -144,7 +144,7 @@ We can add it to excluded packages in our .spacemacs file (within the layers sec
 ** better understand ii layer....bring it over to this area so i can edit it more easily.
    I added the contents of our layer to the reference section.
    The knottiest parts are our packages and funcs.  I can move the config part ou8t as a package to practice that, move stephen's timetracker to a package, and then I think tackle packages and might need to pair with hh on the funcs.  In the funcs is all our code around getting tmate to work in cluster and populating clipboards and all of that, and these are things that currently don't work consistently, so there will need to be some refactoring.
-** [2/4] layer->packages
+** [3/3] layer->packages
 *** DONE layers
     CLOSED: [2020-05-03 Sun 21:11]
 *** DONE config
@@ -158,7 +158,8 @@ We can add it to excluded packages in our .spacemacs file (within the layers sec
   - removed the spaceline-org-clock as I do not understand what it does, and want it to be added itnetionally (believe it just adds a clock to the modeline when in org-mode....which feels like too many clocks!)
 
 My initial plan was ot make this an 'ii-sensible' package. As I was doing this i realized that having a package of just a few configs is a bit overkill.  We are already having a custom layer wiuth the entire .spacemacs.d  We can add these configurations into the user-config portion, well commented so another ii person can understand them and toggle them as needed.  So I did that instead.
-*** TODO packages
+*** DONE packages
+    CLOSED: [2020-05-04 Mon 22:32]
     First, let's remove all commented out portions of the package.el.  The comments are still in the reference, but will help us scan it more easily.
 
 #+begin_src elisp
@@ -334,32 +335,15 @@ How much of this is necessary now?  How much is added through layers already?
 s is additional and good, so I added it to our packages
 xclip will be useful for us, assuming we using terminal...but why yasnippet?  that's already included yah?  so i'm removing it.
 
-Next, let's remove any layers that we could import just as packages
+Next, let's remove any layers that we could import just as packages, or that are too specifici (eg powershell and iterm)
 #+begin_src elisp
   ;;; Code:
   (defun ii/init-ob-tmate ()
     (use-package ob-tmate))
-  (defun ii/init-ob-powershell ()
-    (use-package ob-powershell))
   (defun ii/init-ob-tmux ()
     (use-package ob-tmux))
   (defun ii/init-iterm ()
     (use-package iterm))
-  (defun ii/init-ob-sql-mode ()
-    (use-package ob-sql-mode))
-  (defun ii/init-ox-gfm ()
-    (use-package ox-gfm))
-  (defun ii/init-s ()
-    (use-package ob-sql-mode))
-  (defun ii/init-org-checklist ()
-    (use-package org-checklist))
-  (defun ii/init-ob-go ()
-    (use-package ob-go))
-  (defun ii/init-kubernetes ()
-    (use-package kubernetes))
-  (defun ii/init-kubernetes-evil ()
-    (use-package kubernetes-evil))
-
   (defun ii/init-osc52e ()
     )
   (defun ii/post-init-osc52e ()
@@ -386,90 +370,34 @@ Next, let's remove any layers that we could import just as packages
   ;; Disable the execute advice when we export src blocks
   (advice-add 'org-babel-exp-src-block
               :around #'ii/advice:org-babel-exp-src-block)
-  (defun ii/post-init-go-mode ()
-    (message "ii/post-init-go-mode YAHOOOOOOOO!!")
-    )
-  (defun ii/post-init-lsp-mode ()
-    (message "ii/post-init-lsp-mode YAHOOOOOOOO!!")
-     (setq
-     go-backend #'lsp
-     lsp-navigation 'both
-     lsp-ui-doc-enable t
-     lsp-ui-doc-position 'top
-     lsp-ui-doc-alignment 'frame
-                                          ; lsp-ui-doc-border 'white
-     lsp-ui-doc-use-childframe t
-     lsp-ui-doc-use-webkit t
-     lsp-ui-doc-delay 0.2
-     lsp-ui-doc-include-signature nil
-     lsp-ui-sideline-show-symbol t
-     lsp-ui-remap-xref-keybindings t
-     lsp-ui-sideline-enable t
-     lsp-prefer-flymake nil
-     lsp-print-io t
-     )
-    )
-  (defun ii/pre-init-org ()
-    (spacemacs|use-package-add-hook org
-      :post-config (progn
-                     (add-to-list 'org-babel-load-languages
-                                  '(go . t))
-                     (add-to-list 'org-babel-load-languages
-                                  '(shell . t))
-                     (add-to-list 'org-babel-load-languages
-                                  '(sql-mode . t))
-                     (add-to-list 'org-babel-load-languages
-                                  '(emacs-lisp . t))
-                     )))
   (defun ii/post-init-org ()
     (require 'ob-shell)
     (require 'ob-powershell)
-    (require 'cal-iso)
-    )
-  (defun ii/post-init-yasnippet ()
-    ;; TODO do this within let for local var
-    (spacemacs|use-package-add-hook yasnippet
-      :post-config (progn
-                     (add-to-list 'yas-snippet-dirs (expand-file-name
-                                                     "snippets"
-                                                     (configuration-layer/get-layer-local-dir
-                                                      'ii))
-                                  t)
-                     (yas-load-directory (expand-file-name
-                                          "snippets"
-                                          (configuration-layer/get-layer-local-dir
-                                           'ii)))
-    )))
+    (require 'cal-iso))
 
   (defconst ii-packages
-    `((ob-powershell
-       :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-powershell")
-       )
+    `(
       (iterm
        :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "iterm")
        )
       (ob-tmate
        :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-tmate")
        )
-      (kubernetes
-        :ensure t
-        :commands (kubernetes-overview))
-      (kubernetes-evil
-        :ensure t
-        :after kubernetes)
-      (ob-go :ensure t
-             :location (recipe
-                        :fetcher github
-                        :repo "pope/ob-go"))
       (ob-tmux :ensure t)
-      (ob-sql-mode :ensure t)
       (osc52e :ensure t
                :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "osc52e")
       )
   ;;; packages.el ends here
 #+end_src
 
-*** TODO funcs
+I think i've lifted the most I could and put them into packages.  Though the packages are installed, they aren't active until you do a '(require package).   In many cases you wo7uld want this to be file by file or dir by dir, but in others (e.g. ob-go and ob-sql-mode) we may wanna make them as layers instead so they are added in at the start and we dont' have to remember to add a file local variable.
+** Create an ii-go layer
+   This let's us ensure when go  is added it can be used in a literate way.  it is also a simple enough start to writing our custom layers.
+
+   til: you can add the go layer in layers.el and it will then download and load it if it isn't htere already.  in other words, you don't need to add go twice in our configuration-layers.  we just add ii-go and it handles the rest.
+** Create an ii-org layer
+   I believe we could set much of our customization and turn on ob-async by default.  this would be nice!
+
 * Testing things all work
 ** Refile Me!
 ** web stuff
@@ -514,6 +442,11 @@ Next, let's remove any layers that we could import just as packages
 
    #+end_src
 
+   #+RESULTS: Sample go code
+   : Hello, Zach, you are very suave.
+
+
+
    We have a go layer, but ob-go is a separate thing, and so we cannot execute this function.  We will need to add it, which feels like a nice opportunity to have an ii-go layer that has our custom setup for go.  Or if it's fairly minimal, to just add it to our user-config.  A convo with Caleb would help with this.
 ** python stuff
    let's verify we are using python3 by default
@@ -536,6 +469,10 @@ Next, let's remove any layers that we could import just as packages
    :
    : "-------fun"
 
+** sql stuff
+   #+begin_src sql-mode
+   \d+
+   #+end_src
 ** org stuff
 *** check async works
 
@@ -553,8 +490,6 @@ Next, let's remove any layers that we could import just as packages
     #+RESULTS:
     : async
 
-    
-* Refile Works!
 * Reference
 ** The original ii layer
 *** packages
@@ -1599,8 +1534,8 @@ alist, to ensure correct results."
    I tried to add it as a package, and it could not be found.  When i look it up, the github link is also  a 404.
    This is one where the package is likely v. small or already included.  I think we should tackle it when someone has a recurring task ansd theircurrent flow isn't workiung for them.
 
-   
-   
+
+* Footnotes
 # Local Variables:
-# eval: (require (quote ob-async))
+# eval: (require (quote ob-sql-mode))
 # End:
