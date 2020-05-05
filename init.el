@@ -99,6 +99,17 @@ before layer configuration.
 It should only modify the values of Spacemacs settings."
   ;; This setq-default sexp is an exhaustive list of all the supported
   ;; spacemacs settings.
+  ;; For online mirror using github
+  ;; (setq configuration-layer-elpa-archives
+  ;;      '(("melpa" . "https://raw.githubusercontent.com/humacs/elpa-mirror/2020.5.4.20/melpa/")
+  ;;        ("org"   . "https://raw.githubusercontent.com/humacs/elpa-mirror/2020.5.4.20/org/")
+  ;;        ("gnu"   . "https://raw.githubusercontent.com/humacs/elpa-mirror/2020.5.4.20/gnu/")))
+  ;; For offline mirror `git clone -b 2020.5.4.20 --depth 1  https://github.com/humacs/elpa-mirror ~/.humacs-elpa'
+  ;; Warning this is around 1GB
+  (setq configuration-layer-elpa-archives
+         `(("melpa" . ,(concat user-home-directory ".humacs-elpa/melpa/"))
+           ("org"   . ,(concat user-home-directory ".humacs-elpa/org/"))
+           ("gnu"   . ,(concat user-home-directory ".humacs-elpa/gnu/"))))
   (setq-default
    ;; If non-nil then enable support for the portable dumper. You'll need
    ;; to compile Emacs 27 from source following the instructions in file
