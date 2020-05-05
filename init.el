@@ -74,7 +74,6 @@ This function should only modify configuration layer settings."
                                       s ; useful elisp string functions
                                       xclip ; copy to and from gui clipboard when in terminal
                                       feature-mode ; highlighting for cucumber user stories
-                                      ob-async ; asynchronous code blocks, useful for long running processes
                                       ob-sql-mode ; run sql blocks in org files
                                       )
 
@@ -498,23 +497,6 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
-;;;;
-;; Org Mode
-;;;;
-  (setq
-   ;; don't ask for confirmation every time you execute a code block.
-   org-confirm-babel-evaluate nil
-  ;; sensible (for ii) org-babel defaults
-  org-babel-python-command "python3"
-  ;; enable support for packages that help in org exports
-  org-enable-github-support t
-  org-enable-bootstrap-support t
-  org-enable-reveal-js-support t
-  org-enable-epub-support t
-  ;; add all org files in our projects' org folder to agenda
-  ;; this adds some searching and navigation super powers (try SPC aom)
-  org-agenda-files '("~/apisnoop/docs")
-  )
   (global-visual-line-mode t)
 ;;;;
 ;; Indentation
