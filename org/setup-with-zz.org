@@ -768,6 +768,12 @@ I think i've lifted the most I could and put them into packages.  Though the pac
 
    it's simple now as i don't want ot have anything assumed because of apisnoop.  When i went through our current sql-hacks it looks like they work to set up the blocks as postgres blocks and to set the default db and user to be apisnoop.  Both are assumptions that should probably go into an apisnoop layer.
 
+** Create an ii-tools layer
+   Sort of a misc. layer that holds useful all around tools, like find-ssh-agent and stephen's timesheet.
+
+** Create an ii-mate layer
+*** Understand what code relates just to tmate and tmux
+    There's a couple packages we bring in, and then some logic around setting custom sessions and such...how much of it is wrapped up in apisnoop?
 
 * Testing things all work
 ** Refile Me!
@@ -1402,11 +1408,6 @@ I think i've lifted the most I could and put them into packages.  Though the pac
     (setq current-tmate-ssh nil)
     (setq current-tmate-sh nil)
     )
-   (defun ssh-find-agent ()
-    (interactive)
-    (setenv "SSH_AUTH_SOCK" (shell-command-to-string "find /tmp /run/host/tmp/ -type s -regex '.*/ssh-.*/agent..*$' 2> /dev/null | tail -n 1 | tr -d '\n'"))
-    (message (getenv "SSH_AUTH_SOCK"))
-    )
   (with-eval-after-load "org"
     ;; (add-to-list 'org-src-lang-modes '("go-mode" . sql))
     (add-to-list 'org-structure-template-alist
@@ -1895,6 +1896,422 @@ I think i've lifted the most I could and put them into packages.  Though the pac
                                       yaml
   #+end_example
 
+** modified ii layer
+   This is our scratch.  As we move things into their own layers, we delete from the original.  This helps us track progress a bit easier.
+*** packages
+#+begin_src elisp
+  (defun ii/init-ob-shell ()
+    (use-package ob-shell)
+    ;;(require 'ob-shell)
+    )
+  (defun ii/init-ob-tmate ()
+    (use-package ob-tmate))
+  (defun ii/init-ob-powershell ()
+    (use-package ob-powershell))
+  (defun ii/init-ob-tmux ()
+    (use-package ob-tmux))
+  (defun ii/init-iterm ()
+    (use-package iterm))
+
+  (defun ii/init-osc52e ()
+    )
+  (defun ii/post-init-osc52e ()
+    (require 'osc52e)
+    (osc52-set-cut-function)
+    )
+  (setq ob-async-pre-execute-src-block-hook nil)
+  ;; When we execute src blocks, we have some advice
+  (advice-add 'org-babel-execute-src-block
+              :before #'ii/advice:org-babel-execute-src-block)
+
+  ;; Disable the execute advice when we export src blocks
+  (advice-add 'org-babel-exp-src-block
+              :around #'ii/advice:org-babel-exp-src-block)
+
+  (defconst ii-packages
+    `(
+      (ob-powershell
+       :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-powershell")
+       )
+      (iterm
+       :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "iterm")
+       )
+      (ob-tmate
+       :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "ob-tmate")
+       )
+      (ob-tmux :ensure t)
+      (osc52e :ensure t
+               :location ,(concat (configuration-layer/get-layer-local-dir 'ii) "osc52e")
+      )
+#+end_src
+*** funcs
+#+begin_src elisp
+  ;; Stephen's weekly time tracker
+  (defun iso-week-to-time (year week day)
+    (pcase-let ((`(,m ,d ,y)
+                 (calendar-gregorian-from-absolute
+                  (calendar-iso-to-absolute (list week day year)))))
+      (encode-time 0 0 0 d m y)))
+
+  (defun ii-timesheet ()
+    "Create a timesheet buffer and insert skel"
+    (interactive)
+    (require 'cal-iso)
+    (switch-to-buffer (get-buffer-create "*ii-timesheet*"))
+    (ii-timesheet-skel)
+    )
+
+  (define-skeleton ii-timesheet-skel
+    "Prompt the week and year before generating ii timesheet for the user."
+    ""
+    (text-mode)
+
+    ;; > "#+TITLE: Timesheet: Week " (setq v1 (skeleton-read "Timesheet Week? "))
+    > "#+TITLE: Timesheet: Week " (setq v1 (skeleton-read "Timesheet Week? "))
+    ;; ", " (setq v2 (skeleton-read "Timesheet Year? "))
+    ", " (setq v2 "2020")
+    " (" (getenv "USER") ")" \n
+    > "#+AUTHOR: " (getenv "USER") \n
+    > " " \n
+    > "Please refer to the instructions in ii-timesheet.org as required." \n
+    > " " \n
+    > "* Week Summary" \n
+    > " " _ \n
+    > "#+BEGIN: clocktable :scope file :block thisweek :maxlevel 2 :emphasise t :tags t :formula %" \n
+    > "#+END" \n
+    > " " \n
+
+    > "* " (format-time-string "%B %e, %Y" (iso-week-to-time (string-to-number v2) (string-to-number v1) 1)) \n
+    > "** Task X" \n
+    > "* " (format-time-string "%B %e, %Y" (iso-week-to-time (string-to-number v2) (string-to-number v1) 2)) \n
+    > "** Task X" \n
+    > "* " (format-time-string "%B %e, %Y" (iso-week-to-time (string-to-number v2) (string-to-number v1) 3)) \n
+    > "** Task X" \n
+    > "* " (format-time-string "%B %e, %Y" (iso-week-to-time (string-to-number v2) (string-to-number v1) 4)) \n
+    > "** Task X" \n
+    > "* " (format-time-string "%B %e, %Y" (iso-week-to-time (string-to-number v2) (string-to-number v1) 5)) \n
+    > "** Task X" \n
+    > " " \n
+    (org-mode)
+    (save-buffer)
+    )
+
+  ;;; This section is for tmate / copy / paste for creating/using the right eye
+  ;; ensure a process can run, discard output
+  (defun runs-and-exits-zero (program &rest args)
+    "Run PROGRAM with ARGS and return the exit code."
+    (with-temp-buffer
+      (if (= 0 (apply 'call-process program nil (current-buffer) nil args))
+          'true
+        ))
+    )
+
+  (defun xclip-working ()
+    "Quick Check to see if X is working."
+    (if (getenv "DISPLAY")
+        ;; this xset test is a bit flakey
+        ;; (if (runs-and-exits-zero "xset" "q")
+        ;; Using xclip to set an invalid selection is as lightly intrusive
+        ;; check I could come up with, and not overwriting anything
+        ;; however it seems to hang
+        ;; (if (runs-and-exits-zero "xclip" "-selection" "unused")
+        ;;     'true)
+        'true
+      ;; )
+      )
+    )
+
+  (defun create-target-script (filename command)
+    "Create a temporary script to create/connect to target tmate window"
+    (message "Creating a script file in tmp")
+    (with-current-buffer (find-file-noselect filename)
+      (erase-buffer)
+      (insert-for-yank
+       (concat "\n#!/bin/sh\n\n" command))
+      (save-buffer)
+      (set-file-modes filename #o755)
+      )
+    )
+
+  (defun ii/populate-clipboard-with-tmate-connect-command()
+    "Populate the clipboard with the correct command to connect to tmate"
+    (message "Trying to populate clipboard")
+    (let ((attach-command (if ;; incluster
+                              (file-exists-p "/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+                              ;; use kubectl
+                              (concat "kubectl exec -n "
+                                      (with-temp-buffer
+                                        (insert-file-contents
+                                         "/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+                                        (buffer-string))
+                                      " -ti " system-name
+                                      " attach " (file-name-base load-file-name))
+                            ;; out of cluster, use tmate directly
+                            (concat "tmate -S " socket " attach"))
+                          ))
+      (gui-select-text attach-command)
+      (osc52-interprogram-cut-function attach-command)
+                            )
+    )
+  (defun populate-terminal-clipboard ()
+    "Populate the osc52 clipboard via terminal with the start-tmate-sh"
+    ;; TODO
+    (message "Unable to set X Clipboard to contain the start-tmate-sh")
+    ;; (create-target-script tmate-sh start-tmate-command)
+    ;; (gui-select-text tmate-sh)
+    (if (string= (getenv "KUBERNETES_PORT_443_TCP_PROTO") "tcp")
+        (setq current-tmate-sh (concat "kubectl exec -ti " system-name " attach " (file-name-base load-file-name)))
+      (progn
+        (setq current-tmate-sh tmate-sh) ;; since tmate-sh is buffer-local..
+        (if (string= (getenv "CLOUD_SHELL") "true")
+            (setq current-tmate-ssh (concat "gcloud alpha cloud-shell ssh --ssh-flag=-t --command=" tmate-sh))
+          (if (string= system-name "sharing.io")
+              (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
+              (setq current-tmate-ssh tmate-sh)
+            )
+          )
+        )
+    )
+    (if (string= (getenv "KUBERNETES_PORT_443_TCP_PROTO") "tcp")
+        (setq current-tmate-ssh (concat "kubectl exec -ti " system-name " attach " (file-name-base load-file-name)))
+      (if (string= (getenv "CLOUD_SHELL") "true")
+          (setq current-tmate-ssh (concat "gcloud alpha cloud-shell ssh --ssh-flag=-t --command=" tmate-sh))
+        (if (string= system-name "sharing.io")
+            (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
+          (setq current-tmate-ssh tmate-sh))
+        )
+      )
+    (message "Trying to set via osc52")
+    (osc52-interprogram-cut-function current-tmate-ssh)
+    (with-current-buffer (get-buffer-create "start-tmate-sh" )
+      (erase-buffer)
+       (insert-for-yank "You may need to copy this manually:\n\n" )
+       (if (string= (getenv "KUBERNETES_PORT_443_TCP_PROTO") "tcp")
+           (insert-for-yank (concat "\nConnect to this in cluster tmate via:\n\n" current-tmate-sh))
+         (insert-for-yank
+          (concat "\nTo open on another host, forward your iisocket by pasting:\n\n" current-tmate-ssh
+                "\n\nOR open another terminal on the same host and paste:\n\n" current-tmate-sh)
+        )
+       )
+    )
+  )
+  (defun populate-x-clipboard ()
+    "Populate the X clipboard with the start-tmate-sh"
+    (message "Setting X Clipboard to contain the start-tmate-sh")
+    (xclip-mode 1)
+    (create-target-script tmate-sh start-tmate-command)
+    (setq current-tmate-sh tmate-sh) ;; since tmate-sh is buffer-local..
+    (setq current-tmate-ssh (concat "ssh -tAX " ssh-user-host " " tmate-sh))
+    (if (string= ssh-host "")
+        (progn
+          (gui-select-text current-tmate-sh)
+          (with-current-buffer (get-buffer-create "start-tmate-sh")
+            (insert-for-yank "The following has been populated to your local X clipboard:\n")
+            (insert-for-yank
+             ;; we can use the global current-tmate-sh
+             (concat "Open another terminal on the same host and paste:\n\n" current-tmate-sh)
+             ))
+          )
+      (progn
+        (gui-select-text current-tmate-ssh)
+        (with-current-buffer (get-buffer-create "start-tmate-ssh")
+          (insert-for-yank "The following has been populated to your local X clipboard:\n")
+          (insert-for-yank
+           ;; we can use the global current-tmate-sh
+           (concat "Open another terminal on the your emacs host and paste:\n\n" current-tmate-ssh)
+           ))
+        )
+        )
+    (xclip-mode 0)
+    ;; and unset it when done
+    (setq current-tmate-ssh nil)
+    (setq current-tmate-sh nil))
+
+   (defun ssh-find-agent ()
+    (interactive)
+    (setenv "SSH_AUTH_SOCK" (shell-command-to-string "find /tmp /run/host/tmp/ -type s -regex '.*/ssh-.*/agent..*$' 2> /dev/null | tail -n 1 | tr -d '\n'"))
+    (message (getenv "SSH_AUTH_SOCK"))
+    )
+  (with-eval-after-load "org"
+    ;; (add-to-list 'org-src-lang-modes '("go-mode" . sql))
+    (add-to-list 'org-structure-template-alist
+                 `("g" . "src go")))
+
+  ;; This section is for setting org code block defaults that are based on the current user and file
+  ;; alist-set is used to override the existing settings
+  (defun alist-set (key val alist &optional symbol)
+    "Set property KEY to VAL in ALIST. Return new alist.
+  This creates the association if it is missing, and otherwise sets
+  the cdr of the first matching association in the list. It does
+  not create duplicate associations. By default, key comparison is
+  done with `equal'. However, if SYMBOL is non-nil, then `eq' is
+  used instead.
+
+  This method may mutate the original alist, but you still need to
+  use the return value of this method instead of the original
+  alist, to ensure correct results."
+    (if-let ((pair (if symbol (assq key alist) (assoc key alist))))
+        (setcdr pair val)
+      (push (cons key val) alist))
+    alist)
+
+  ;; Some local variable defaults that set our database connections
+  ;; note the UID being dynamic, so we can have a dedicated port per person
+  (defun ii/sql-org-hacks()
+    (message "START: ii/sql-org-hacks")
+    (set (make-local-variable 'sql-sqlite-program)
+         (executable-find "sqlite3"))
+    (set (make-local-variable 'sql-server)
+         (if (getenv "PGHOST")
+             (getenv "PGHOST")
+           (if (file-exists-p "/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+               "postgres"
+               "localhost"
+             )))
+    (set (make-local-variable 'sql-port)
+         (if (getenv "PGPORT")
+             (string-to-number (getenv "PGPORT"))
+           5432))
+    (set (make-local-variable 'sql-user)
+         (if (getenv "PGUSER")
+             (getenv "PGUSER")
+           "apisnoop"))
+    (set (make-local-variable 'sql-database)
+         (if (getenv "PGDATABASE")
+             (getenv "PGDATABASE")
+           "apisnoop"))
+    (set (make-local-variable 'sql-product)
+         '(quote postgres))
+    (set (make-local-variable 'sql-connection-alist)
+         (list
+          (list 'raiinbow
+                (list 'sql-product '(quote sqlite))
+                (list 'sql-database "raiinbow.sqlite")
+                )
+          (list 'apisnoop
+                (list 'sql-product '(quote postgres))
+                (list 'sql-user (getenv "PGUSER"))
+                (list 'sql-database (getenv "PGDATABASE"))
+                (list 'sql-port sql-port)
+                (list 'sql-server (getenv "PGHOST")))
+          (list 'none
+                (list 'sql-product '(quote postgres))
+                (list 'sql-user sql-user)
+                (list 'sql-database sql-database)
+                (list 'sql-port sql-port)
+                (list 'sql-server sql-server))))
+    (message "END: ii/sql-org-hacks"))
+
+  ;; This uses alist-set to override the default code block parameters
+  (defun ii/before-local-org-hacks()
+    (message "BEGIN ii/before-local-org-hacks")
+    (ii/sql-org-hacks)
+    (make-local-variable 'org-babel-default-header-args:tmate)
+    (setq org-babel-default-header-args:tmate
+          (alist-set :exports "code"
+          (alist-set :session user-login-name
+          (alist-set :window user-login-name
+          ;; alist-set :socket socket
+                     org-babel-default-header-args:tmate))))
+    (make-local-variable 'org-babel-default-header-args:tmate)
+    (setq org-babel-default-header-args:tmux
+          (alist-set :exports "code"
+          (alist-set :session user-login-name
+          (alist-set :window user-login-name
+                     org-babel-default-header-args:tmate))))
+    (message "END ii/before-local-org-hacks"))
+
+  (defun ii/advice:org-babel-exp-src-block (obde)
+    "Disable the execute advice when we export src blocks"
+    (advice-remove 'org-babel-execute-src-block
+                   #'ii/advice:org-babel-execute-src-block)
+    (funcall obde)
+    (advice-add 'org-babel-execute-src-block
+                 :before #'ii/advice:org-babel-execute-src-block)
+    )
+  (defun ii/advice:org-babel-execute-src-block (&optional arg info params)
+    "if ii-mate not set and this is a tmate src block"
+    (interactive)
+    ;; only run if this is a tmate block
+    (if (string= "tmate" (car (org-babel-get-src-block-info t)))
+        (let* (
+               (org-session (alist-get :session (nth 2 (org-babel-get-src-block-info t))))
+               (socket (alist-get :socket (nth 2 (org-babel-get-src-block-info t))))
+               (session-dir (cdr (assq :dir params)))
+               ;; (session-x (message "terminal: %S, socket: %S, org-session: %S" terminal socket org-session))
+               (session-name (ob-tmate--tmate-session org-session))
+               (session-window (ob-tmate--tmate-window org-session))
+               (session-socket (if socket
+                                   (expand-file-name socket)
+                                 (ob-tmate--tmate-socket org-session)
+                         ))
+               (session-y (message "session-socket: %S" session-socket)))
+          (progn
+            (message "about to trying to start ii-tmate-process")
+            ;; (make-local-variable 'ii-tmate-process)
+            (make-local-variable 'ii-tmate-configured)
+            ;; ensure a tmate server has been started
+            (unless ii-tmate-process
+              (progn
+                (setq ii-tmate-process
+                      (start-process-shell-command
+                       (concat session-name "-tmate-process")
+                       (concat "**" session-name "-tmate-process**")
+                       (concat "tmate"
+                               ;; " -F -v"
+                               " -d -v"
+                               " -S " session-socket
+                               " new-session"
+                               " -s " session-name
+                               " -n " "init"; session-window
+                               " -c " session-dir
+                               "read X")
+                       ))))))))
+
+  ;; This is the function intended to be run as a before-hack-local-variables-hook
+  (defun ii/before-local-var-hacks()
+    (message "BEGIN: ii/before-local-var-hacks")
+    (if (string-equal mode-name "Org")
+        (if (alist-get 'ii file-local-variables-alist)
+            (ii/before-local-org-hacks)))
+    (message "END: ii/before-local-var-hacks")
+    (message "ii org-mode hacks applied"))
+
+
+#+end_src
+
+*** config.el
+    #+begin_src elisp
+(setq
+ osc52e-package-dir (concat (configuration-layer/get-layer-local-dir 'ii) "osc52e")
+ ii-tmate-configured nil
+ ii-tmate-process nil
+ org-babel-tmux-terminal "xterm"
+ org-babel-tmux-terminal-opts '("-T" "ob-tmux" "-e")
+ org-babel-tmux-session-prefix "ii-"
+ org-babel-tmux-default-window-name "main"
+ )
+
+;; setting 'safe-local-variable properties
+(put 'ii 'safe-local-variable (lambda (_) t)) ; related to ii: enabled var we put at top of org files.
+(put 'org-babel-tmate-session-prefix 'safe-local-variable #'stringp)
+(put 'org-babel-tmate-default-window-name 'safe-local-variable #'stringp)
+(put 'github-username 'safe-local-variable #'stringp)
+(put 'github-user 'safe-local-variable #'stringp)
+(put 'org-confirm-babel-evaluate 'safe-local-variable #'booleanp)
+;; (put 'org-confirm-babel-evaluate 'safe-local-variable (lambda (_) t))
+(put 'org-use-property-inheritance 'safe-local-variable (lambda (_) t))
+(put 'org-src-preserve-indentation 'safe-local-variable (lambda (_) t))
+(put 'org-file-dir 'safe-local-variable (lambda (_) t))
+(put 'eval 'safe-local-variable (lambda (_) t))
+
+;; before-local-var-hacks
+(add-hook 'before-hack-local-variables-hook 'ii/before-local-var-hacks)
+
+;; older versions of org require this for <s templating to work correctly
+(when (version<= "9.2" (org-version)) (require 'org-tempo))
+
+    #+end_src
 ** Packaging basics
    https://www.gnu.org/software/emacs/manual/html_node/elisp/Packaging-Basics.html
 * Future needs
