@@ -74,7 +74,6 @@ This function should only modify configuration layer settings."
                                       s ; useful elisp string functions
                                       xclip ; copy to and from gui clipboard when in terminal
                                       feature-mode ; highlighting for cucumber user stories
-                                      ob-sql-mode ; run sql blocks in org files
                                       )
 
    ;; A list of packages that cannot be updated.
