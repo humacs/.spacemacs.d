@@ -565,3 +565,23 @@ before packages are loaded."
   (setq python-shell-interpreter "python3")
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
+
+;;;;
+;; lsp
+;;;;
+
+(setq
+ lsp-navigation 'both
+ lsp-ui-doc-enable t
+ lsp-ui-doc-position 'top
+ lsp-ui-doc-alignment 'frame
+ lsp-ui-doc-use-childframe t
+ lsp-ui-doc-use-webkit t
+ lsp-ui-doc-delay 0.2
+ lsp-ui-doc-include-signature nil
+ lsp-ui-sideline-show-symbol t
+ lsp-ui-remap-xref-keybindings t
+ lsp-ui-sideline-enable t
+ lsp-prefer-flymake nil
+ lsp-print-io t
+ )
