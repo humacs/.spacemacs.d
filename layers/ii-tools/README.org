@@ -13,26 +13,13 @@
 - [[#description][Description]]
   - [[#features][Features:]]
 - [[#install][Install]]
-- [[#key-bindings][Key bindings]]
 
 * Description
 This layer adds a set of useful all-around functions for our work.
 ** Features:
-  - find your ssh agent to enable pushing to git with ssh
-  - a timesheet templating tool, following stephen's timesheet flow
+  - find your ssh agent to enable pushing to git with ssh (ssh-find-agent)
+  - a timesheet templating tool, following stephen's timesheet flow (ii-timesheet)
 * Install
 To use this configuration layer, add it to your =~/.spacemacs=. You will need to
 add =ii-tools= to the existing =dotspacemacs-configuration-layers= list in this
 file.
-
-* Key bindings
-
-| Key Binding | Description    |
-|-------------+----------------|
-| ~SPC x x x~ | Does thing01   |
-
-# Use GitHub URLs if you wish to link a Spacemacs documentation file or its heading.
-# Examples:
-# [[https://github.com/syl20bnr/spacemacs/blob/master/doc/VIMUSERS.org#sessions]]
-# [[https://github.com/syl20bnr/spacemacs/blob/master/layers/%2Bfun/emoji/README.org][Link to Emoji layer README.org]]
-# If space-doc-mode is enabled, Spacemacs will open a local copy of the linked file.
