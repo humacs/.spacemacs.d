@@ -1,0 +1,25 @@
+#+TITLE: ii-mate layer
+# Document tags are separated with "|" char
+# The example below contains 2 tags: "layer" and "web service"
+# Avaliable tags are listed in <spacemacs_root>/.ci/spacedoc-cfg.edn
+# under ":spacetools.spacedoc.config/valid-tags" section.
+#+TAGS: layer|web service
+
+# The maximum height of the logo should be 200 pixels.
+[[img/ii-mate.png]]
+
+# TOC links should be GitHub style anchors.
+* Table of Contents                                        :TOC_4_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+- [[#install][Install]]
+
+* Description
+This layer adds support for literate pair programming when doing dev-ops work.  It is centered around using tmate in org src blocks, so that you can easily document code and see it executed on its own screen.
+** Features:
+  - run tmate src blocks that will auto-trigger a tmate session to share
+
+* Install
+To use this configuration layer, add it to your =~/.spacemacs=. You will need to
+add =ii-mate= to the existing =dotspacemacs-configuration-layers= list in this
+file.
