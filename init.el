@@ -59,6 +59,7 @@ This function should only modify configuration layer settings."
      treemacs
      ii-elpa
      ii-go
+     ii-mate
      ii-org
      ii-org-capture
      ii-sql
