@@ -13,7 +13,7 @@
  org-enable-epub-support t
  ;; add all org files in our projects' org folder to agenda
  ;; this adds some searching and navigation super powers (try SPC aom)
- org-agenda-files '("~/apisnoop/docs")
+ ;; org-agenda-files '("~/apisnoop/docs")
  )
 
 ;;; Set reasonable (for ii) default header args
