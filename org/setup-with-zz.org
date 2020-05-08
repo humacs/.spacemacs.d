@@ -815,10 +815,23 @@ I think i've lifted the most I could and put them into packages.  Though the pac
     #+end_src
 
 ** Improve ergonomoics of tmate
-*** Check tmate version
-*** Check if you are on a remote box and adjust accordingly
-*** Check if in cluster
+*** DONE Check tmate version
+    CLOSED: [2020-05-08 Fri 04:22]
+*** DONE Check if you are on a remote box and adjust accordingly
+    CLOSED: [2020-05-08 Fri 04:22]
+*** TODO Get values from tmate without requiring y-or-n prompts
+    We have these prompts that basically give us a few seconds of room for the tmate sessiont o complete...so we have a "do you have a terminal window?" which is intended to pause the process so that tmate has some time to run...no matter what someone presses, it'll copy the tmate info to their clipboard once they've pressed it.
+
+    I am now doing the same for the remote side, and it just feels clunky.  This feels like a repeated enough pattern in our function that havin it be more logical might make it easier to maintain.
+
+    I started to research two async libraries:
+    - https://github.com/chuntaro/emacs-async-await
+    - https://github.com/skeeto/emacs-aio
+
+      both use similar syntax to javascript (so i feel comfy) and are small enough.  I think I like chuntaro's library more.   In gboth, i couldn't quite tell if i had to write a promise or if i could just have something that was going to take a minyute...in other words, whether the ob-tmate-- functions would work to just slot in to a (aio-wait-for tmate_ssh) type command...did some scratch work, but it was a bit hard to simulate.   Will try for another half hour or os and see if it's a pth i wanna go down.
+
 *** don't dump tmate logs to current directory
+***
 * Testing things all work
 ** Refile Me!
 ** web stuff
