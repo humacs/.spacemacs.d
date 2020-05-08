@@ -43,6 +43,7 @@
 (require 'seq)
 (require 'osc52e)
 (require 'iterm)
+(require 's)
 
 (defcustom org-babel-tmate-location "tmate"
   "The command location for tmate.
@@ -82,67 +83,80 @@ Change in case you want to use a different tmate than the one in your $PATH."
     (:session . "tmate")
     (:window . "i")
     (:dir . ".")
-    (:socket . nil)
-    )
+    (:socket . nil))
   "Default arguments to use when running tmate source blocks.")
 
 (add-to-list 'org-src-lang-modes '("tmate" . sh))
+;;;;
+;; helper functions
+;;;;
+
+(defun tmate-compatability-check ()
+  (let* ((tmate-version (shell-command-to-string "tmate -V"))
+         (tmate-not-installed-p (s-contains? "command not found" tmate-version))
+         (compatible-version-p (s-matches? "tmate [2-9].[4-9].[0-9]" tmate-version)))
+    (cond
+     (tmate-not-installed-p "not installed")
+     ((eq nil compatible-version-p) "not compatible")
+     (t "compatible"))))
+
+(defvar install-tmate "It looks like you don't have tmate installed.  You will want to install tmate 2.4.0, available on its github releases page.")
+(defvar upgrade-tmate "It looks like you're using an earlier tmate.  We require version 2.4.0 or above.  You can find it on their github releases page.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org-babel interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defun org-babel-execute:tmate (body params)
+  "Check tmate compatability.  If compatible, sends the body and params on to our tmate functions.  Otherwise sends message explaining requirements."
+  (message "Checking for compatible tmate before continuing")
+  (save-window-excursion
+    (let* ((tmate-compatability (tmate-compatability-check)))
+      (cond
+       ((eq tmate-compatability "not installed")(message install-tmate))
+       ((eq tmate-compatability "not compatible")(message upgrade-tmate))
+       (t (send-src-to-tmate body params))))))
+
+(defun send-src-to-tmate (body params)
   "Send a block of code via tmate to a terminal using Babel.
 \"default\" session is used when none is specified.
 Argument BODY the body of the tmate code block.
 Argument PARAMS the org parameters of the code block."
   (message "Sending source code block to interactive terminal session...")
   (save-window-excursion
-    (let* (
-           (socket (cdr (assq :socket params)))
+    (let* ((session (cdr (assq :session params)))
+           (socket (ob-tmate--tmate-socket session))
            (dir (cdr (assq :dir params)))
-           (session (cdr (assq :session params)))
            (window (cdr (assq :window params)))
-           (socket (if socket
-                       (expand-file-name socket)
-                     (ob-tmate--tmate-socket session)
-                     ))
-           ;; (tmate-command (concat org-babel-tmate-location " -S " socket
-           ;;                        " attach-session || read X")
            (ob-session (ob-tmate--create
                         :session session :window window :socket socket))
+           (on-remote-p (stringp (getenv "SSH_CONNECTION")))
            (session-alive (ob-tmate--session-alive-p ob-session))
            (window-alive (ob-tmate--window-alive-p ob-session)))
-      ;; Create tmate session and window if they do not yet exist
-      ;; Start terminal window if the session does not yet exist
       (message "OB-TMATE: Checking for session: %S" session-alive)
       (unless session-alive
         (progn
           (message "OB-TMATE: create-session")
           (ob-tmate--create-session session dir socket)
           (ob-tmate--start-terminal-window ob-session)
+          (if on-remote-p
+              (progn
+                (y-or-n-p "it looks like you are remote.  an attach command was copied to your clipboard.  Paste it in a new terminal on this same remote machine.")
+                (osc52-interprogram-cut-function (concat "tmate -S " socket " attach")))
           (y-or-n-p "Has a terminal started and shown you a url?")
           (gui-select-text (ob-tmate--ssh-url ob-session))
           (osc52-interprogram-cut-function (concat (ob-tmate--ssh-url ob-session) " # " (ob-tmate--web-url ob-session)))
           (if (y-or-n-p "Open browser for url?")
-              (browse-url (ob-tmate--web-url ob-session))
-            )
-          )
-        )
+              (browse-url (ob-tmate--web-url ob-session))))))
       (message "OB-TMATE: Checking for window: %S" window-alive)
       (unless window-alive
-        (progn
-          (message "OB-TMATE: create-window"))
-        (ob-tmate--create-window ob-session dir)
+          (message "OB-TMATE: create-window")
+        (ob-tmate--create-window ob-session dir))
         ;; (while (not (ob-tmate--window-alive-p ob-session)))
-        )
       ;; Wait until tmate window is available
       ;; Disable window renaming from within tmate
       ;; (ob-tmate--disable-renaming ob-session)
       (ob-tmate--send-body
        ob-session (org-babel-expand-body:generic body params)))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ob-tmate object
@@ -164,17 +178,13 @@ Argument PARAMS the org parameters of the code block."
     (if (string-equal "" window) nil window)))
 (defun ob-tmate--tmate-socket (org-session)
   "Extract tmate window from ORG-SESSION string."
-  (let* (
-         (session-name (car (split-string org-session ":")))
-         )
-    (concat temporary-file-directory user-login-name "." session-name ".tmate" )
-    ))
+  (let* ((session-name (car (split-string org-session ":"))))
+    (concat temporary-file-directory user-login-name "." session-name ".tmate" )))
 
 (defun ob-tmate--from-session-window-socket (session window socket)
   "Create a new ob-tmate-session object from ORG-SESSION specification.
 Required argument SOCKET: the location of the tmate socket."
-  (ob-tmate--create :session session :window window :socket socket)
-  )
+  (ob-tmate--create :session session :window window :socket socket))
 
 (defun ob-tmate--window-default (ob-session)
   "Extracts the tmate window from the ob-tmate- object.
@@ -217,16 +227,13 @@ Optional command-line arguments can be passed in ARGS."
         (apply 'start-process "ob-tmate" "*Messages*"
 	             org-babel-tmate-location
 	             "-S" (ob-tmate--socket ob-session)
-	             args)
-        )
+	             args))
     (progn
       (message (concat "OB-TMATE: execute args: => " (string-join args " ")))
-      ;; (message (concat "OB-TMATE: execute ob-session: => " ob-session))
       (message (concat "OB-TMATE: execute start-process:" (ob-tmate--socket ob-session)))
       (setenv "TMUX")
       (apply 'start-process
-	           "ob-tmate" "*Messages*" org-babel-tmate-location args)))
-  )
+	           "ob-tmate" "*Messages*" org-babel-tmate-location args))))
 
 (defun ob-tmate--execute-string (ob-session &rest args)
   "Execute a tmate command with arguments as given.
@@ -244,8 +251,7 @@ automatically space separated."
 
 (defun ob-tmate--start-terminal-window-iterm (ob-session)
   "Start a terminal window in iterm"
-  (let* ((socket (ob-tmate--socket ob-session))
-         )
+  (let* ((socket (ob-tmate--socket ob-session)))
     (iterm-new-window-send-string
      (concat
       "tmate "
@@ -267,18 +273,15 @@ automatically space separated."
                    "-e"
                    (concat org-babel-tmate-location " -S " socket
                            " attach-session || read X")
-                   )
-    )
-  )
+                   )))
+
 (defun ob-tmate--start-terminal-window-osc52 (ob-session)
   "Start a terminal window in iterm"
   (let* ((socket (ob-tmate--socket ob-session))
          (tmate-command (concat org-babel-tmate-location " -S " socket
-                 " attach-session || read X")
-         )
-         (osc52-interprogram-cut-function tmate-command)
-    )
-    ))
+                 " attach-session || read X"))
+         (osc52-interprogram-cut-function tmate-command))))
+
 (defun ob-tmate--start-terminal-window (ob-session)
   "Start a TERMINAL window with tmate attached to session.
 
@@ -289,9 +292,7 @@ Argument OB-SESSION: the current ob-tmate session."
         ((string= org-babel-tmate-terminal "xterm") (ob-tmate--start-terminal-window-xterm ob-session))
         ((string= org-babel-tmate-terminal "osc52") (ob-tmate--start-terminal-window-osc52 ob-session))
         ((string= org-babel-tmate-terminal "web") (ob-tmate--start-terminal-window-osc52 ob-session))
-        (t (message "We didn't find a supported terminal type"))
-         )
-        )
+        (t (message "We didn't find a supported terminal type"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tmate interaction
@@ -348,8 +349,7 @@ Argument OB-SESSION: the current ob-tmate session."
            " && "
            "read X" ; need to hit enter to continue
            "\"" ; end command
-           )
-   )
+           ))
   ;;;;;; INSTALL tmate hook for when a client attaches
   ;; Wait for tmate to be ready
   ;; This means tmate ssh/web urls are handy
@@ -359,26 +359,6 @@ Argument OB-SESSION: the current ob-tmate session."
   ;; When new client-attaches, create new window and run osc52-tmate.sh
   ;; tmux set-environment -g PATH ""
   ;; tmate -S $TMATE_SOCKET set-hook -g client-attached 'run-shell "tmate new-window osc52-tmate.sh"'
-
-  ;; (ob-tmate--execute ob-session
-  ;;                    "new-session"
-  ;;                    ;; "-A" ;; attach if it already exists (d)
-  ;;                    "-d" ;; just create the session, don't attach.
-  ;;                    ;; "-S" (ob-tmate--socket ob-session)
-  ;;                    ;; "-S" "/tmp/ob-tmate-socket" ;; Static for now
-  ;;                    ;; "-u" ;; UTF-8 please... only in newer tmux
-  ;;                    ;; "-vv" ;; Logs please... also only in newer tmux
-  ;;                    "-c" (expand-file-name session-dir)
-  ;;                    "-s" (ob-tmate--session ob-session)
-  ;;                    "-n" (ob-tmate--window-default ob-session)
-  ;;                    )
-  ;; (message "OB-TMATE: Waiting for tmate to be ready")
-  ;; (ob-tmate--execute ob-session "wait" "tmate-ready")
-  ;; how can we capture this?
-  ;; (setq ob-tmate-ssh-string (ob-tmate--execute-string ob-session
-  ;;                   "display" "-p" "#{tmate_ssh}"
-  ;;                   ))
-  ;; (message (concat "OB-TMATE: " ob-tmate-ssh-string))
   )
 
 
@@ -428,12 +408,10 @@ Argument OB-SESSION: the current ob-tmate session."
                          "select-window"
                          "-t" (ob-tmate--window-default ob-session))
       (ob-tmate--execute ob-session
-                         ;; "-S" (ob-tmate--socket ob-session)
                          "send-keys"
                          "-l"
                          "-t" (ob-tmate--window-default ob-session)
-                         line "\n")
-      )))
+                         line "\n"))))
 
 (defun ob-tmate--send-body (ob-session body)
   "If tmate window (passed in OB-SESSION) exists, send BODY to it.
@@ -469,22 +447,19 @@ Argument OB-SESSION: the current ob-tmate session."
   ;; if we can 'tmate ls' and return zero, we are good
   (= 0 (apply 'call-process org-babel-tmate-location nil nil nil
 	       "-S" (ob-tmate--socket ob-session)
-	       '("ls"))
-  ))
+	       '("ls"))))
 
 (defun ob-tmate--ssh-url (ob-session)
   "Retrieve the ssh # http://url/session for the ob-session"
   (ob-tmate--execute-string ob-session
                             "display"
-                            "-p '#{tmate_ssh}'"
-                            ))
+                            "-p '#{tmate_ssh}'"))
+
 (defun ob-tmate--web-url (ob-session)
   "Retrieve the ssh # http://url/session for the ob-session"
   (substring (ob-tmate--execute-string ob-session
                             "display"
-                            "-p '#{tmate_web}'"
-                            )
-             0 -1))
+                            "-p '#{tmate_web}'") 0 -1))
 
 (defun ob-tmate--window-alive-p (ob-session)
   "Check if WINDOW exists in tmate session.
@@ -497,12 +472,9 @@ If no window is specified in OB-SESSION, returns 't."
 	       (output (ob-tmate--execute-string ob-session
 		                                       "list-windows"
 		                                       "-F '#W'"
-                                           ))
-         )
+                                           )))
     ;; (y-or-n-p (concat "Is {" target "} alive?"))
-    (string-match-p (concat window "\n") output)
-    )
-  )
+    (string-match-p (concat window "\n") output)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test functions
