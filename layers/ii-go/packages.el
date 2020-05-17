@@ -31,6 +31,7 @@
 
 (defconst ii-go-packages
   '(lsp-ui
+    go-dlv
     (ob-go :location (recipe
                       :fetcher github
                       :repo "pope/ob-go")))

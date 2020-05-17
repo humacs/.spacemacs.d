@@ -13,6 +13,7 @@
 - [[#description][Description]]
   - [[#features][Features]]
 - [[#install][Install]]
+  - [[#delve][Delve]]
 
 * Description
 This layer extends the spacemacs go layer with additional configuration for use in literate programming.
@@ -30,3 +31,5 @@ add =ii-go= to the existing =dotspacemacs-configuration-layers= list in this
 file.
 
 This layer assumes you have go installed.  If not, you can install it following the guide [[https://golang.org/doc/install?download=go1.14.2.linux-amd64.tar.gz][on golang.org]]
+** Delve
+https://github.com/go-delve/delve/tree/master/Documentation/installation
