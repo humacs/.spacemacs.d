@@ -4,5 +4,7 @@
 ;;;;
 
 (configuration-layer/declare-layer 'go)
+(configuration-layer/declare-layer 'lsp)
+(configuration-layer/declare-layer 'dap)
 
 ;;; layers.el ends here
