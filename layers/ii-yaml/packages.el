@@ -70,4 +70,9 @@ Each entry is either:
 (defun ii-yaml/init-flycheck-swagger-tools ()
 (use-package flycheck-swagger-tools)
 )
+;; TODO needs better logic to only apply this to kubernetes manifests
+(defun ii-yaml/post-init-lsp-mode ()
+  (let ((ii-yaml-schemas (make-hash-table)))
+    (puthash :kubernetes "/*yaml" lsp-yaml-schemas)
+    (setq lsp-yaml-schemas ii-yaml-schemas)))
 ;;; packages.el ends here

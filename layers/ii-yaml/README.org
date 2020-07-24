@@ -1,0 +1,7 @@
+
+
+
+#+name: foo
+#+BEGIN_SRC sh
+  npm i -g yaml-language-server
+#+END_SRC
