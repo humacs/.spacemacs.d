@@ -64,7 +64,7 @@ This function should only modify configuration layer settings."
      ii-org-capture
      ii-sql
      ii-tools
-     ii-pairing
+     ; ii-pairing
      )
 
    ;; List of additional packages that will be installed without being
