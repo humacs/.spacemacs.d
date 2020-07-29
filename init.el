@@ -32,7 +32,7 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(markdown
+   '(
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
@@ -47,24 +47,38 @@ This function should only modify configuration layer settings."
      html
      javascript
      kubernetes
-     lsp
+     (lsp :variables
+          lsp-navigation 'both
+          lsp-ui-doc-enable t
+          lsp-ui-doc-position 'top
+          lsp-ui-doc-alignment 'frame
+          lsp-ui-doc-use-childframe t
+          lsp-ui-doc-use-webkit t
+          lsp-ui-doc-delay 0.2
+          lsp-ui-doc-include-signature nil
+          lsp-ui-sideline-show-symbol t
+          lsp-ui-remap-xref-keybindings t
+          lsp-ui-sideline-enable t
+          lsp-prefer-flymake nil
+          lsp-print-io t)
      markdown
-     multiple-cursors
+     ;; multiple-cursors
      osx
-     python
+     (python :variables
+             python-shell-interpreter "python3")
      (shell :variables
             shell-default-height 30
             shell-default-position 'bottom)
      syntax-checking
      treemacs
-     ii-elpa
+     ;; ii-elpa
      ii-go
      ii-mate
      ii-org
      ii-org-capture
      ii-sql
      ii-tools
-     ; ii-pairing
+     ;; ii-pairing
      )
 
    ;; List of additional packages that will be installed without being
@@ -74,20 +88,13 @@ This function should only modify configuration layer settings."
    ;; To use a local version of a package, use the `:location' property:
    ;; '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '(
-                                      s ; useful elisp string functions
-                                      xclip ; copy to and from gui clipboard when in terminal
-                                      feature-mode ; highlighting for cucumber user stories
-                                      )
+   dotspacemacs-additional-packages '()
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
 
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(
-                                    ;; unavailable?
-                                    company-tern
-                                    )
+   dotspacemacs-excluded-packages '()
 
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
@@ -113,7 +120,7 @@ It should only modify the values of Spacemacs settings."
      (defconst spacemacs-banner-directory
        (concat dotspacemacs-directory "banners/"))
      ))
-  (setq-default
+   (setq-default
    ;; If non-nil then enable support for the portable dumper. You'll need
    ;; to compile Emacs 27 from source following the instructions in file
    ;; EXPERIMENTAL.org at to root of the git repository.
@@ -129,9 +136,9 @@ It should only modify the values of Spacemacs settings."
    ;; portable dumper in the cache directory under dumps sub-directory.
    ;; To load it when starting Emacs add the parameter `--dump-file'
    ;; when invoking Emacs 27.1 executable on the command line, for instance:
-   ;;   ./emacs --dump-file=~/.emacs.d/.cache/dumps/spacemacs.pdmp
-   ;; (default spacemacs.pdmp)
-   dotspacemacs-emacs-dumper-dump-file "spacemacs.pdmp"
+   ;;   ./emacs --dump-file=$HOME/.emacs.d/.cache/dumps/spacemacs-27.1.pdmp
+   ;; (default spacemacs-27.1.pdmp)
+   dotspacemacs-emacs-dumper-dump-file (format "spacemacs-%s.pdmp" emacs-version)
 
    ;; If non-nil ELPA repositories are contacted via HTTPS whenever it's
    ;; possible. Set it to nil if you have no way to use HTTPS in your
@@ -198,7 +205,6 @@ It should only modify the values of Spacemacs settings."
    ;; by your Emacs build.
    ;; If the value is nil then no banner is displayed. (default 'official)
    ;; dotspacemacs-startup-banner 'official
-   ;; If graphical, display kubemacs, otherwise 008-banner.txt
    dotspacemacs-startup-banner (if (display-graphic-p)
                                    (concat dotspacemacs-directory "banners/img/kubemacs.png")
                                  8)
@@ -402,7 +408,10 @@ It should only modify the values of Spacemacs settings."
    ;;   :size-limit-kb 1000)
    ;; When used in a plist, `visual' takes precedence over `relative'.
    ;; (default nil)
-   dotspacemacs-line-numbers nil
+   dotspacemacs-line-numbers '(:relative nil
+                               :visual nil
+                               :disabled-for-modes nil
+                               :size-limit-kb 2000)
 
    ;; Code folding method. Possible values are `evil' and `origami'.
    ;; (default 'evil)
@@ -470,7 +479,7 @@ It should only modify the values of Spacemacs settings."
    ;; `trailing' to delete only the whitespace at end of lines, `changed' to
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
-   dotspacemacs-whitespace-cleanup 'trailing
+   dotspacemacs-whitespace-cleanup 'changed
 
    ;; If non nil activate `clean-aindent-mode' which tries to correct
    ;; virtual indentation of simple modes. This can interfer with mode specific
@@ -498,7 +507,7 @@ This function defines the environment variables for your Emacs session. By
 default it calls `spacemacs/load-spacemacs-env' which loads the environment
 variables declared in `~/.spacemacs.env' or `~/.spacemacs.d/.spacemacs.env'.
 See the header of this file for more information."
-  (setq  spacemacs-env-vars-file (concat dotspacemacs-directory "../" user-login-name "-spacemacs.env"))
+  (setq  spacemacs-env-vars-file (concat dotspacemacs-directory "../" user-login-name "-ii.env"))
   (spacemacs/load-spacemacs-env))
 
 (defun dotspacemacs/user-init ()
@@ -507,8 +516,7 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
-  (setq custom-file (concat dotspacemacs-directory "../" user-login-name "-spacemacs-custom.el"))
-  ;; (setq custom-file (concat dotspacemacs-directory "../custom.el"))
+  (setq custom-file (concat dotspacemacs-directory "../" user-login-name "-ii-custom.el"))
   (load custom-file)
   )
 
@@ -525,73 +533,20 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
-  (global-visual-line-mode t)
-;;;;
-;; Indentation
-;;;;
-
-  ;; A code snippet taken from https://github.com/lparry
-  ;; this is to help offset that spacemacs can be inconsistent with web indents for some bizarre reason.
-    (defun my-setup-indent (n)
-    ;; java/c/c++
-    (setq-local standard-indent n)
-    (setq-local c-basic-offset n)
-    ;; web development
-    (setq-local javascript-indent-level n) ; javascript-mode
-    (setq-local js-indent-level n) ; js-mode
-    (setq-local react-indent-level n) ; react-mode
-    (setq-local js2-basic-offset n) ; js2-mode, in latest js2-mode, it's alias of js-indent-level
-    (setq-local web-mode-attr-indent-offset n) ; web-mode
-    (setq-local web-mode-code-indent-offset n) ; web-mode, js code in html file
-    (setq-local web-mode-css-indent-offset n) ; web-mode, css in html file
-    (setq-local web-mode-markup-indent-offset n) ; web-mode, html tag in html file
-    (setq-local web-mode-sql-indent-offset n) ; web-mode
-    (setq-local web-mode-attr-value-indent-offset n) ; web-mode
-    (setq-local css-indent-offset n) ; css-mode
-    (setq-local sh-basic-offset n) ; shell scripts
-    (setq-local sh-indentation n))
-
-  (defun my-personal-code-style ()
+  ;; This is added by Caleb Woodbine so we can scroll!
+  (defun scroll-up-5-lines ()
+    "Scroll up 5 lines"
     (interactive)
-    (message "My personal code style!")
-    ;; use space instead of tab
-    (setq indent-tabs-mode nil)
-    ;; indent 2 spaces width
-    (my-setup-indent 2))
+    (scroll-up 5))
 
-  (my-personal-code-style) ;; it would be lovely if this was enough, but it gets stomped on by modes >:(
+  (defun scroll-down-5-lines ()
+    "Scroll down 5 lines"
+    (interactive)
+    (scroll-down 5))
 
-  (add-hook 'css-mode-hook 'my-personal-code-style)
-  (add-hook 'js2-mode-hook 'my-personal-code-style)
-  (add-hook 'react-mode-hook 'my-personal-code-style)
-  (add-hook 'sh-mode-hook 'my-personal-code-style)
+  (global-set-key (kbd "<mouse-4>") 'scroll-down-5-lines)
+  (global-set-key (kbd "<mouse-5>") 'scroll-up-5-lines)
   )
 
-;;;;
-;; python
-;;;;
-
-  ;; consistent use of python3 in spacemacs
-  (setq python-shell-interpreter "python3")
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
-
-;;;;
-;; lsp
-;;;;
-
-(setq
- lsp-navigation 'both
- lsp-ui-doc-enable t
- lsp-ui-doc-position 'top
- lsp-ui-doc-alignment 'frame
- lsp-ui-doc-use-childframe t
- lsp-ui-doc-use-webkit t
- lsp-ui-doc-delay 0.2
- lsp-ui-doc-include-signature nil
- lsp-ui-sideline-show-symbol t
- lsp-ui-remap-xref-keybindings t
- lsp-ui-sideline-enable t
- lsp-prefer-flymake nil
- lsp-print-io t
- )
