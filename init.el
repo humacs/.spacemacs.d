@@ -105,6 +105,14 @@ before layer configuration.
 It should only modify the values of Spacemacs settings."
   ;; This setq-default sexp is an exhaustive list of all the supported
   ;; spacemacs settings.
+  (advice-add
+   'spacemacs-buffer//choose-banner
+   :before
+   (lambda ()
+     "Overriding Banner Folder"
+     (defconst spacemacs-banner-directory
+       "~/humacs/spacemacs-config/banners/" )
+     ))
   (setq-default
    ;; If non-nil then enable support for the portable dumper. You'll need
    ;; to compile Emacs 27 from source following the instructions in file
@@ -182,7 +190,11 @@ It should only modify the values of Spacemacs settings."
    ;; directory. A string value must be a path to an image format supported
    ;; by your Emacs build.
    ;; If the value is nil then no banner is displayed. (default 'official)
-   dotspacemacs-startup-banner 'official
+   ;; dotspacemacs-startup-banner 'official
+   ;; If graphical, display kubemacs, otherwise 008-banner.txt
+   dotspacemacs-startup-banner (if (display-graphic-p)
+                                   (concat dotspacemacs-directory "banners/img/kubemacs.png")
+                                 8)
 
    ;; List of items to show in startup buffer or an association list of
    ;; the form `(list-type . list-size)`. If nil then it is disabled.

@@ -1,3 +1,5 @@
+(defconst ii-pairing-packages ()
+  )
 ;; (defconst ii-pairing-packages
 ;;   `(
 ;;    (lockstep
