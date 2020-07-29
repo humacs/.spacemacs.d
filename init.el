@@ -111,7 +111,7 @@ It should only modify the values of Spacemacs settings."
    (lambda ()
      "Overriding Banner Folder"
      (defconst spacemacs-banner-directory
-       "~/humacs/spacemacs-config/banners/" )
+       (concat dotspacemacs-directory "banners/"))
      ))
   (setq-default
    ;; If non-nil then enable support for the portable dumper. You'll need
