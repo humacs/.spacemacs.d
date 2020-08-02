@@ -32,7 +32,9 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(
+   '(sql
+     yaml
+     clojure
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
@@ -56,12 +58,14 @@ This function should only modify configuration layer settings."
             shell-default-height 30
             shell-default-position 'bottom)
      syntax-checking
+     themes-megapack
      treemacs
      ii-elpa
      ii-go
      ii-mate
      ii-org
      ii-org-capture
+     ;; ii-roam
      ii-sql
      ii-tools
      )
@@ -76,6 +80,7 @@ This function should only modify configuration layer settings."
    dotspacemacs-additional-packages '(
                                       s ; useful elisp string functions
                                       xclip ; copy to and from gui clipboard when in terminal
+                                      aio ; async functions
                                       feature-mode ; highlighting for cucumber user stories
                                       )
 
