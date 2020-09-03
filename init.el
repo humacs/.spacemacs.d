@@ -40,6 +40,7 @@ This function should only modify configuration layer settings."
      ;; ----------------------------------------------------------------
      auto-completion
      better-defaults
+     csv
      docker
      emacs-lisp
      git
@@ -61,6 +62,7 @@ This function should only modify configuration layer settings."
           lsp-ui-sideline-enable t
           lsp-prefer-flymake nil
           lsp-print-io t)
+     lua
      markdown
      ;; multiple-cursors
      osx
@@ -71,8 +73,10 @@ This function should only modify configuration layer settings."
             shell-default-position 'bottom)
      sql
      syntax-checking
+     terraform
      treemacs
      yaml
+     vue
      ;; ii-elpa
      ii-go
      ii-mate
