@@ -509,7 +509,7 @@ This function defines the environment variables for your Emacs session. By
 default it calls `spacemacs/load-spacemacs-env' which loads the environment
 variables declared in `~/.spacemacs.env' or `~/.spacemacs.d/.spacemacs.env'.
 See the header of this file for more information."
-  (setq  spacemacs-env-vars-file (concat dotspacemacs-directory "../" user-login-name "-ii.env"))
+  (setq  spacemacs-env-vars-file (concat user-home-directory ".humacs.env"))
   (spacemacs/load-spacemacs-env))
 
 (defun dotspacemacs/user-init ()
@@ -518,8 +518,10 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
-  (setq custom-file (concat dotspacemacs-directory "../" user-login-name "-ii-custom.el"))
-  (load custom-file)
+  (setq custom-file (concat user-home-directory ".humacs-custom.el"))
+  (if (file-exists-p custom-file)
+      (load custom-file)
+    )
   )
 
 (defun dotspacemacs/user-load ()
