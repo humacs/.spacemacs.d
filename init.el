@@ -68,6 +68,7 @@ This function should only modify configuration layer settings."
      osx
      (python :variables
              python-shell-interpreter "python3")
+     ruby
      (shell :variables
             shell-default-height 30
             shell-default-position 'bottom)
