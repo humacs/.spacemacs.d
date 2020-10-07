@@ -40,6 +40,7 @@ This function should only modify configuration layer settings."
      ;; ----------------------------------------------------------------
      auto-completion
      better-defaults
+     clojure
      csv
      docker
      emacs-lisp
@@ -543,6 +544,8 @@ configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
   ;; This is added by Caleb Woodbine so we can scroll!
+  ;; older versions of org require this for s> templating to work correctly
+  (when (version<= "9.2" (org-version)) (require 'org-tempo))
   (defun scroll-up-5-lines ()
     "Scroll up 5 lines"
     (interactive)
