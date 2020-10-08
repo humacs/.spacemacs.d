@@ -23,7 +23,7 @@
         (:comments . "org")
         (:exports . "both")
         (:eval . "never-export")
-        (:exports . "code")
+        (:exports . "both")
         (:cache . "no")
         (:noweb . "no")
         (:hlines . "no")
