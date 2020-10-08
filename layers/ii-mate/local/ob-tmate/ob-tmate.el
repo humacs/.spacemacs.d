@@ -124,7 +124,10 @@ Argument PARAMS the org parameters of the code block."
   (message "Sending source code block to interactive terminal session...")
   (save-window-excursion
     (let* ((session (cdr (assq :session params)))
-           (socket (ob-tmate--tmate-socket session))
+           (socket
+            (if (cdr (assq :socket params))
+                (cdr (assq :socket params))
+              (ob-tmate--tmate-socket session)))
            (dir (cdr (assq :dir params)))
            (window (cdr (assq :window params)))
            (ob-session (ob-tmate--create
