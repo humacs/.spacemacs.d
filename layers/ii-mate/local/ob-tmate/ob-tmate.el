@@ -277,6 +277,21 @@ automatically space separated."
                    (concat org-babel-tmate-location " -S " socket
                            " attach-session || read X")
                    )))
+(defun ob-tmate--start-terminal-window-kitty (ob-session)
+  ;; TODO update docstrings
+  "Start a terminal window in iterm"
+  (let* ((process-name (concat "org-babel: terminal"))
+         (socket (ob-tmate--socket ob-session))
+         (target (ob-tmate--target ob-session))
+         )
+    (start-process process-name "*tmate-terminal*"
+                   "kitty"
+                   "--hold"
+                   "-T" target
+                   org-babel-tmate-location
+                   "-S" socket
+                   "attach-session")
+                   ))
 
 (defun ob-tmate--start-terminal-window-osc52 (ob-session)
   "Start a terminal window in iterm"
@@ -292,6 +307,7 @@ Argument OB-SESSION: the current ob-tmate session."
   (message "OB-TMATE: start-terminal-window")
   (cond
         ((string= org-babel-tmate-terminal "iterm") (ob-tmate--start-terminal-window-iterm ob-session))
+        ((string= org-babel-tmate-terminal "kitty") (ob-tmate--start-terminal-window-kitty ob-session))
         ((string= org-babel-tmate-terminal "xterm") (ob-tmate--start-terminal-window-xterm ob-session))
         ((string= org-babel-tmate-terminal "osc52") (ob-tmate--start-terminal-window-osc52 ob-session))
         ((string= org-babel-tmate-terminal "web") (ob-tmate--start-terminal-window-osc52 ob-session))
