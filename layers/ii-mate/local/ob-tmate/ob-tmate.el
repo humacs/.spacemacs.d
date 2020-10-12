@@ -57,15 +57,19 @@ Change in case you want to use a different tmate than the one in your $PATH."
   :type 'string)
 
 (defun default-org-babel-tmate-terminal()
-  "What terminal should we use as a default"
-  (cond ((string= system-type "darwin") (concat "iterm"))
-        ((string= system-type "gnu/linux")
-         (if ;; incluster
-             (file-exists-p "/var/run/secrets/kubernetes.io/serviceaccount/namespace")
-             (concat "osc52")
-         (concat "xterm")
-         ))
-        (t (concat "xterm"))))
+  "What terminal should we use as a default.
+Useses kitty if found, otherwise iterm on OSX"
+  (cond
+   ;; in-cluster
+   ((file-exists-p "/var/run/secrets/kubernetes.io/serviceaccount/namespace") (concat "osc52"))
+   ;; kitty - available on OSX and Linux
+   ((executable-find "kitty") (concat "kitty"))
+   ;; Also a nice default, only on OSX
+   ((file-directory-p "/Applications/iTerm.app") (concat "iterm"))
+   ;; (string= system-type "gnu/linux")
+   ;; Default to xterm
+   (t (concat "xterm"))
+  ))
 
 (defcustom org-babel-tmate-terminal (default-org-babel-tmate-terminal)
   "This is the terminal that will be spawned."
@@ -328,7 +332,27 @@ Argument OB-SESSION: the current ob-tmate session."
   ;; (message (concat "OB-TMATE: ob-session" ob-session))
   (message "OB-TMATE: ob-tmate--create-session name,dir,socket => %S,%S,%S" session-name session-dir session-socket)
   ;; TODO: temporarily unset this tmux env rather than globally
-  (setenv "TMUX") ;unset tmux env so this can be run from within a tmux session without complaint
+  (let* ((process-name (concat "org-babel: tmux new"))
+         (process-environment (cl-copy-list process-environment))
+         ;; on OSX the terminfo file is in a strange
+         (osx-terminfo "/Applications/kitty.app/Contents/Resources/kitty/terminfo")
+         )
+    ;; kitty on OSX ships with a terminfo file
+    ;; that tmate must know about (the terminfo db is not updated)
+    ;; TODO: Can we setup OSX so the term entry is added to db?
+    ;; Otherwise we get these errors only when running kitty:
+    ;; As the terminal definition is unavailable to tmux/tmate
+    ;; tmate -S /var/folders/by/83x6hv0j3vzdv42kltf5th4r0000gn/T/hh.local-cluster.tmate attach-session
+    ;;    open terminal failed: can't find terminfo database
+    (if (string= org-babel-tmate-terminal "kitty")
+        (progn
+          (setenv "TERM" "xterm-kitty")
+          (if (file-directory-p osx-terminfo)
+              (setenv "TERMINFO" osx-terminfo)
+            )))
+    ;;unset tmux env so this can be run from within a tmux session without complaint
+    (setenv "TMUX")
+
   (start-process-shell-command
    (concat session-name "-tmate-process")
    (concat "**" session-name "-tmate-process**")
@@ -378,7 +402,7 @@ Argument OB-SESSION: the current ob-tmate session."
   ;; When new client-attaches, create new window and run osc52-tmate.sh
   ;; tmux set-environment -g PATH ""
   ;; tmate -S $TMATE_SOCKET set-hook -g client-attached 'run-shell "tmate new-window osc52-tmate.sh"'
-  )
+  ))
 
 
 (defun ob-tmate--create-window (ob-session session-dir)
