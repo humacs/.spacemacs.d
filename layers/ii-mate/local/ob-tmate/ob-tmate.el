@@ -51,6 +51,16 @@ Change in case you want to use a different tmate than the one in your $PATH."
   :group 'org-babel
   :type 'string)
 
+(defun default-org-babel-tmate-kitty-socket()
+  "The kitty-socket, best if we define a single socket to use."
+  (concat "unix:" temporary-file-directory user-login-name ".kitty" ))
+
+(defcustom org-babel-tmate-kitty-socket (default-org-babel-tmate-kitty-socket)
+  "The command location for tmate.
+Change in case you want to use a different tmate than the one in your $PATH."
+  :group 'org-babel
+  :type 'string)
+
 (defcustom org-babel-tmate-session-prefix ""
   "The string that will be prefixed to tmate session names started by ob-tmate."
   :group 'org-babel
@@ -84,7 +94,7 @@ Uses kitty if found, otherwise iterm on OSX"
 
 
 (defvar org-babel-default-header-args:tmate
-  '((:results . "silent")
+  `((:results . "silent")
     (:session . "tmate")
     (:window . "i")
     (:dir . ".")
@@ -92,9 +102,10 @@ Uses kitty if found, otherwise iterm on OSX"
              ;; If emacs is run within TMUX/TMATE
              ;; Let's go ahead and use our existing socket
              ;; Otherwise we are likely wanting to launch our own
-             (if (getenv "TMUX")
+             ,(if (getenv "TMUX")
                  (car (split-string (getenv "TMUX") ","))
-               (nil))))
+               (nil))
+             ))
   "Default arguments to use when running tmate source blocks.")
 (add-to-list 'org-src-lang-modes '("tmate" . sh))
 ;;;;
@@ -296,6 +307,8 @@ automatically space separated."
          )
     (start-process process-name "*tmate-terminal*"
                    "kitty"
+                   "--listen-on"
+                   org-babel-tmate-kitty-socket
                    "--hold"
                    "-T" target
                    org-babel-tmate-location
@@ -341,6 +354,8 @@ Argument OB-SESSION: the current ob-tmate session."
   (message "OB-TMATE: Creating new / connect to existing tmate session")
   ;; (message (concat "OB-TMATE: ob-session" ob-session))
   (message "OB-TMATE: ob-tmate--create-session name,dir,socket => %S,%S,%S" session-name session-dir session-socket)
+  ;; We kinda need this to be global, so we can use it anywhere
+  (setenv "KITTY_LISTEN_ON" org-babel-tmate-kitty-socket)
   ;; TODO: temporarily unset this tmux env rather than globally
   (let* ((process-name (concat "org-babel: tmux new"))
          (process-environment (cl-copy-list process-environment))
@@ -359,7 +374,8 @@ Argument OB-SESSION: the current ob-tmate session."
           (setenv "TERM" "xterm-kitty")
           (if (file-directory-p osx-terminfo)
               (setenv "TERMINFO" osx-terminfo)
-            )))
+            )
+            ))
     ;;unset tmux env so this can be run from within a tmux session without complaint
     (setenv "TMUX")
 
