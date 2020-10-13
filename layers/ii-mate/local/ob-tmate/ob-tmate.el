@@ -58,7 +58,8 @@ Change in case you want to use a different tmate than the one in your $PATH."
 
 (defun default-org-babel-tmate-terminal()
   "What terminal should we use as a default.
-Useses kitty if found, otherwise iterm on OSX"
+osc52 in cluster
+Uses kitty if found, otherwise iterm on OSX"
   (cond
    ;; in-cluster
    ((file-exists-p "/var/run/secrets/kubernetes.io/serviceaccount/namespace") (concat "osc52"))
@@ -87,9 +88,14 @@ Useses kitty if found, otherwise iterm on OSX"
     (:session . "tmate")
     (:window . "i")
     (:dir . ".")
-    (:socket . nil))
+    (:socket .
+             ;; If emacs is run within TMUX/TMATE
+             ;; Let's go ahead and use our existing socket
+             ;; Otherwise we are likely wanting to launch our own
+             (if (getenv "TMUX")
+                 (car (split-string (getenv "TMUX") ","))
+               (nil))))
   "Default arguments to use when running tmate source blocks.")
-
 (add-to-list 'org-src-lang-modes '("tmate" . sh))
 ;;;;
 ;; helper functions
@@ -301,8 +307,12 @@ automatically space separated."
   "Start a terminal window in iterm"
   (let* ((socket (ob-tmate--socket ob-session))
          (tmate-command (concat org-babel-tmate-location " -S " socket
-                 " attach-session || read X"))
-         (osc52-interprogram-cut-function tmate-command))))
+                                " attach-session || read X"))
+                                )
+         (progn
+           (message (concat "OB-TMATE: osc52ing: " tmate-command))
+           (osc52-interprogram-cut-function tmate-command)
+         )))
 
 (defun ob-tmate--start-terminal-window (ob-session)
   "Start a TERMINAL window with tmate attached to session.
