@@ -535,7 +535,7 @@ Argument OB-SESSION: the current ob-tmate session."
 
 If no window is specified in OB-SESSION, returns 't."
   (let* (
-         (window (ob-tmate--window-default ob-session))
+         (window (car(split-string (ob-tmate--window-default ob-session) ".")));only grab window, ignoring pane if given
 	       (target (ob-tmate--target ob-session))
          ;; This appears to hang if we let it run early
 	       (output (ob-tmate--execute-string ob-session
