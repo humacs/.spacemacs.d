@@ -30,7 +30,13 @@
 ;;; Code:
 
 (defconst ii-org-packages
-  '(ob-async)
+  '(
+    ob-async
+    (kubectl :location local)
+    ;; :ensure t
+    ;; :location ,(concat (configuration-layer/get-layer-local-dir 'ii-org) "kubectl"))
+    ;;    :commands (lockstep lockstep-popup)
+    )
   "The list of Lisp packages required by the ii-org layer.
 
 Each entry is either:
@@ -61,5 +67,9 @@ Each entry is either:
 (defun ii-org/init-ob-async ()
   (use-package ob-async))
 
+(defun ii-org/init-kubectl ()
+  (require 'transient)
+  (use-package kubectl)
+  )
 
 ;;; packages.el ends here

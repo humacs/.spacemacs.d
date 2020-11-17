@@ -48,7 +48,8 @@ This function should only modify configuration layer settings."
      helm
      html
      javascript
-     kubernetes
+     ;; Decided to go with kubectl.el instead
+     ;; kubernetes
      (lsp :variables
           lsp-navigation 'both
           lsp-ui-doc-enable t
